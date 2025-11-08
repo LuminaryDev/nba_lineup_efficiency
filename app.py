@@ -191,25 +191,32 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Initialize session state with proper default values
+def initialize_session_state():
+    if 'navigation' not in st.session_state:
+        st.session_state.navigation = "🏠 Introduction"
+
+    if 'simulator_values' not in st.session_state:
+        st.session_state.simulator_values = {
+            'Shooting_Efficiency': 'Medium',
+            'SCORING_Talent': 'Medium', 
+            'AST_rate': 'Medium',
+            'TOV_rate': 'Medium',
+            'Net_Rating_Impact': 'Medium',
+            'ORB_rate': 'Medium'
+        }
+
+    if 'model_trained' not in st.session_state:
+        st.session_state.model_trained = False
+
+    if 'inference_engine' not in st.session_state:
+        st.session_state.inference_engine = None
+
+    if 'bn_model' not in st.session_state:
+        st.session_state.bn_model = None
+
 # Initialize session state
-if 'navigation' not in st.session_state:
-    st.session_state.navigation = "🏠 Introduction"
-
-if 'simulator_values' not in st.session_state:
-    st.session_state.simulator_values = {
-        'Shooting_Efficiency': 'Medium',
-        'SCORING_Talent': 'Medium', 
-        'AST_rate': 'Medium',
-        'TOV_rate': 'Medium',
-        'Net_Rating_Impact': 'Medium',
-        'ORB_rate': 'Medium'
-    }
-
-if 'model_trained' not in st.session_state:
-    st.session_state.model_trained = False
-
-if 'inference_engine' not in st.session_state:
-    st.session_state.inference_engine = None
+initialize_session_state()
 
 # Sidebar Navigation
 with st.sidebar:
@@ -644,63 +651,68 @@ elif st.session_state.navigation == "🔗 Bayesian Network":
 elif st.session_state.navigation == "🎮 Lineup Simulator":
     st.markdown('<div class="main-header">🎮 Interactive Lineup Simulator</div>', unsafe_allow_html=True)
     
-    @st.cache_data
-    def load_simulator_data():
-        try:
-            data = pd.read_csv("nba_lineups_expanded_discretized.csv")
-            return data
-        except FileNotFoundError:
-            st.warning("📁 Please upload 'nba_lineups_expanded_discretized.csv' for full functionality")
-            return None
-
-    data = load_simulator_data()
-    order = ['Low', 'Medium', 'High']
-
+    # Safe access to session state values with defaults
+    def get_simulator_value(key, default='Medium'):
+        return st.session_state.simulator_values.get(key, default)
+    
+    # Initialize any missing keys in session state
+    required_keys = ['Shooting_Efficiency', 'SCORING_Talent', 'AST_rate', 'TOV_rate', 'Net_Rating_Impact', 'ORB_rate']
+    for key in required_keys:
+        if key not in st.session_state.simulator_values:
+            st.session_state.simulator_values[key] = 'Medium'
+    
     st.markdown('<div class="section-header">⚙️ Lineup Configuration</div>', unsafe_allow_html=True)
     
     # Current Configuration Display
     st.markdown("### 🎯 Current Configuration")
     config_cols = st.columns(3)
     with config_cols[0]:
-        st.metric("Shooting", st.session_state.simulator_values['Shooting_Efficiency'])
+        st.metric("Shooting", get_simulator_value('Shooting_Efficiency'))
     with config_cols[1]:
-        st.metric("Defense", st.session_state.simulator_values['Net_Rating_Impact'])
+        st.metric("Defense", get_simulator_value('Net_Rating_Impact'))
     with config_cols[2]:
-        st.metric("Playmaking", st.session_state.simulator_values['AST_rate'])
+        st.metric("Playmaking", get_simulator_value('AST_rate'))
     
     # Manual Configuration
     st.markdown('<div class="subsection-header">⚙️ Manual Configuration</div>', unsafe_allow_html=True)
+    
+    order = ['Low', 'Medium', 'High']
     
     with st.expander("🎯 Shooting & Scoring", expanded=True):
         shooting_col, scoring_col = st.columns(2)
         with shooting_col:
             shooting = st.selectbox("Shooting Efficiency", order, 
-                                  index=order.index(st.session_state.simulator_values['Shooting_Efficiency']))
+                                  index=order.index(get_simulator_value('Shooting_Efficiency')))
         with scoring_col:
             scoring = st.selectbox("Scoring Talent", order, 
-                                 index=order.index(st.session_state.simulator_values['SCORING_Talent']))
+                                 index=order.index(get_simulator_value('SCORING_Talent')))
     
     with st.expander("🔄 Playmaking & Ball Control", expanded=True):
         play_col1, play_col2 = st.columns(2)
         with play_col1:
             ast_rate = st.selectbox("Assist Rate", order, 
-                                  index=order.index(st.session_state.simulator_values['AST_rate']))
+                                  index=order.index(get_simulator_value('AST_rate')))
         with play_col2:
             tov = st.selectbox("Turnover Rate", order, 
-                             index=order.index(st.session_state.simulator_values['TOV_rate']))
+                             index=order.index(get_simulator_value('TOV_rate')))
     
     with st.expander("🛡️ Defense & Rebounding"):
         def_col1, def_col2 = st.columns(2)
         with def_col1:
             net_rating = st.selectbox("Net Rating Impact", order, 
-                                    index=order.index(st.session_state.simulator_values['Net_Rating_Impact']))
+                                    index=order.index(get_simulator_value('Net_Rating_Impact')))
         with def_col2:
             orb_rate = st.selectbox("Offensive Rebound Rate", order, 
-                                  index=order.index(st.session_state.simulator_values['ORB_rate']))
+                                  index=order.index(get_simulator_value('ORB_rate')))
     
+    # Update session state safely
     st.session_state.simulator_values.update({
-        'Shooting_Efficiency': shooting, 'SCORING_Talent': scoring, 'AST_rate': ast_rate,
-        'TOV_rate': tov, 'Net_Rating_Impact': net_rating, 'ORB_rate': orb_rate
+        'Shooting_Efficiency': shooting, 
+        'SCORING_Talent': scoring, 
+        'AST_rate': ast_rate,
+        'TOV_rate': tov, 
+        'Net_Rating_Impact': net_rating, 
+        'ORB_rate': orb_rate
     })
     
     # Quick Presets
@@ -738,9 +750,12 @@ elif st.session_state.navigation == "🎮 Lineup Simulator":
     with preset_col4:
         if st.button("⚖️\nBalanced", use_container_width=True, key="balanced_btn"):
             st.session_state.simulator_values.update({
-                'Shooting_Efficiency': 'Medium', 'SCORING_Talent': 'Medium', 
-                'AST_rate': 'Medium', 'TOV_rate': 'Medium', 
-                'Net_Rating_Impact': 'Medium', 'ORB_rate': 'Medium'
+                'Shooting_Efficiency': 'Medium', 
+                'SCORING_Talent': 'Medium', 
+                'AST_rate': 'Medium', 
+                'TOV_rate': 'Medium', 
+                'Net_Rating_Impact': 'Medium', 
+                'ORB_rate': 'Medium'
             })
             st.success("✅ Balanced lineup configured!")
             st.rerun()
@@ -753,12 +768,12 @@ elif st.session_state.navigation == "🎮 Lineup Simulator":
     if st.session_state.model_trained and st.session_state.inference_engine is not None:
         # Calculate prediction using actual Bayesian Network
         evidence = {
-            'Shooting_Efficiency': st.session_state.simulator_values['Shooting_Efficiency'],
-            'SCORING_Talent': st.session_state.simulator_values['SCORING_Talent'],
-            'Net_Rating_Impact': st.session_state.simulator_values['Net_Rating_Impact'],
-            'TOV_rate': st.session_state.simulator_values['TOV_rate'],
-            'AST_rate': st.session_state.simulator_values['AST_rate'],
-            'ORB_rate': st.session_state.simulator_values['ORB_rate']
+            'Shooting_Efficiency': get_simulator_value('Shooting_Efficiency'),
+            'SCORING_Talent': get_simulator_value('SCORING_Talent'),
+            'Net_Rating_Impact': get_simulator_value('Net_Rating_Impact'),
+            'TOV_rate': get_simulator_value('TOV_rate'),
+            'AST_rate': get_simulator_value('AST_rate'),
+            'ORB_rate': get_simulator_value('ORB_rate')
         }
         
         # Filter evidence to only include variables that exist in the model
@@ -782,20 +797,20 @@ elif st.session_state.navigation == "🎮 Lineup Simulator":
         st.info("🔧 Using heuristic prediction (train model for Bayesian inference)")
         
         talent_score = sum([
-            2 if st.session_state.simulator_values['SCORING_Talent'] == 'High' else 
-            1 if st.session_state.simulator_values['SCORING_Talent'] == 'Medium' else 0,
+            2 if get_simulator_value('SCORING_Talent') == 'High' else 
+            1 if get_simulator_value('SCORING_Talent') == 'Medium' else 0,
         ])
         
         performance_score = sum([
-            2 if st.session_state.simulator_values['Shooting_Efficiency'] == 'High' else 
-            1 if st.session_state.simulator_values['Shooting_Efficiency'] == 'Medium' else 0,
-            -2 if st.session_state.simulator_values['TOV_rate'] == 'High' else 
-            2 if st.session_state.simulator_values['TOV_rate'] == 'Low' else 0,
-            2 if st.session_state.simulator_values['Net_Rating_Impact'] == 'High' else 
-            1 if st.session_state.simulator_values['Net_Rating_Impact'] == 'Medium' else 0,
-            1 if st.session_state.simulator_values['AST_rate'] == 'High' else 
-            0 if st.session_state.simulator_values['AST_rate'] == 'Medium' else -1,
-            1 if st.session_state.simulator_values['ORB_rate'] == 'High' else 0
+            2 if get_simulator_value('Shooting_Efficiency') == 'High' else 
+            1 if get_simulator_value('Shooting_Efficiency') == 'Medium' else 0,
+            -2 if get_simulator_value('TOV_rate') == 'High' else 
+            2 if get_simulator_value('TOV_rate') == 'Low' else 0,
+            2 if get_simulator_value('Net_Rating_Impact') == 'High' else 
+            1 if get_simulator_value('Net_Rating_Impact') == 'Medium' else 0,
+            1 if get_simulator_value('AST_rate') == 'High' else 
+            0 if get_simulator_value('AST_rate') == 'Medium' else -1,
+            1 if get_simulator_value('ORB_rate') == 'High' else 0
         ])
         
         total_score = talent_score + performance_score
