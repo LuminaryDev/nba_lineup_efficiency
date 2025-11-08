@@ -50,7 +50,7 @@ st.markdown("""
     }
     
     .feature-card {
-        background: #91AEC4;
+        background: #1D428A;
         padding: 1.8rem;
         border-radius: 12px;
         border: 1px solid #e2e8f0;
