@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
-from pgmpy.models import DiscreteBayesianNetwork
+from pgmpy.models import BayesianNetwork
 from pgmpy.estimators import MaximumLikelihoodEstimator, BayesianEstimator
 from pgmpy.inference import VariableElimination
 import warnings
@@ -197,13 +197,19 @@ if 'navigation' not in st.session_state:
 
 if 'simulator_values' not in st.session_state:
     st.session_state.simulator_values = {
-        'shooting': 'Medium',
-        'scoring': 'Medium', 
-        'ast_rate': 'Medium',
-        'tov': 'Medium',
-        'net_rating': 'Medium',
-        'orb_rate': 'Medium'
+        'Shooting_Efficiency': 'Medium',
+        'SCORING_Talent': 'Medium', 
+        'AST_rate': 'Medium',
+        'TOV_rate': 'Medium',
+        'Net_Rating_Impact': 'Medium',
+        'ORB_rate': 'Medium'
     }
+
+if 'model_trained' not in st.session_state:
+    st.session_state.model_trained = False
+
+if 'inference_engine' not in st.session_state:
+    st.session_state.inference_engine = None
 
 # Sidebar Navigation
 with st.sidebar:
@@ -228,7 +234,7 @@ with st.sidebar:
     st.markdown("### 📈 Quick Stats")
     col1, col2 = st.columns(2)
     with col1:
-        st.metric("Lineups", "10,000+")
+        st.metric("Lineups", "7,499")
     with col2:
         st.metric("Teams", "30")
     
@@ -316,7 +322,7 @@ if st.session_state.navigation == "🏠 Introduction":
         <h3>Data Pipeline</h3>
         <p><strong>Comprehensive Data Integration:</strong></p>
         <ul>
-        <li><strong>10,000+ lineup combinations</strong> from 2023-24 NBA season</li>
+        <li><strong>7,499 lineup combinations</strong> from 2023-24 NBA season</li>
         <li>Advanced metrics discretized for Bayesian analysis</li>
         <li>Latent talent variables inferred from observed performance</li>
         <li>Real-time efficiency predictions</li>
@@ -351,18 +357,13 @@ elif st.session_state.navigation == "📊 Data Overview":
     @st.cache_data
     def load_data():
         try:
-            lineup_data = pd.read_csv('nba_lineups_completely_cleaned.csv')
             discretized_data = pd.read_csv('nba_lineups_expanded_discretized.csv')
-            return lineup_data, discretized_data
+            return discretized_data
         except:
-            try:
-                discretized_data = pd.read_csv('nba_lineups_expanded_discretized.csv')
-                return None, discretized_data
-            except:
-                st.error("Please ensure 'nba_lineups_expanded_discretized.csv' is available.")
-                return None, None
+            st.error("Please ensure 'nba_lineups_expanded_discretized.csv' is available.")
+            return None
 
-    lineup_data, discretized_data = load_data()
+    discretized_data = load_data()
     
     if discretized_data is not None:
         tab1, tab2 = st.tabs(["📋 Dataset Overview", "📈 Feature Analysis"])
@@ -383,18 +384,38 @@ elif st.session_state.navigation == "📊 Data Overview":
             st.markdown('<div class="subsection-header">Data Sample</div>', unsafe_allow_html=True)
             st.dataframe(discretized_data.head(10), use_container_width=True)
             
-            if lineup_data is not None:
-                st.markdown('<div class="subsection-header">Original Data Statistics</div>', unsafe_allow_html=True)
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    st.metric("Average PLUS_MINUS", f"{lineup_data['PLUS_MINUS'].mean():.2f}")
-                    st.metric("Average FG%", f"{lineup_data['FG_PCT'].mean():.3f}")
-                with col2:
-                    st.metric("Average 3P%", f"{lineup_data['FG3_PCT'].mean():.3f}")
-                    st.metric("Average Points", f"{lineup_data['PTS'].mean():.1f}")
-                with col3:
-                    st.metric("Total Games", f"{len(lineup_data):,}")
-                    st.metric("Data Completeness", "100%")
+            st.markdown('<div class="subsection-header">Feature Description</div>', unsafe_allow_html=True)
+            
+            feature_info = {
+                'Feature': [
+                    'Efficiency', 'Shooting_Efficiency', 'Net_Rating_Impact',
+                    'SCORING_Talent', 'PLAYMAKING_Talent', 'REBOUNDING_Talent',
+                    'DEFENSIVE_Talent', 'NET_RATING_Talent', 'AST_rate', 
+                    'TOV_rate', 'ORB_rate'
+                ],
+                'Description': [
+                    'Target variable: Points Per Possession (PPP) efficiency',
+                    'Observed shooting performance (TS%)',
+                    'Net rating impact per minute',
+                    'Latent scoring talent from playoff data',
+                    'Latent playmaking talent from playoff data', 
+                    'Latent rebounding talent from playoff data',
+                    'Latent defensive talent from playoff data',
+                    'Latent net rating talent from playoff data',
+                    'Assists per minute rate',
+                    'Turnovers per minute rate',
+                    'Offensive rebound rate'
+                ],
+                'Type': [
+                    'Target', 'Observed', 'Observed',
+                    'Latent', 'Latent', 'Latent',
+                    'Latent', 'Latent', 'Observed',
+                    'Observed', 'Observed'
+                ]
+            }
+            
+            feature_df = pd.DataFrame(feature_info)
+            st.dataframe(feature_df, use_container_width=True)
         
         with tab2:
             st.markdown('<div class="subsection-header">Feature Distribution Analysis</div>', unsafe_allow_html=True)
@@ -428,13 +449,12 @@ elif st.session_state.navigation == "📊 Data Overview":
             # Data quality information
             st.markdown('<div class="subsection-header">Data Quality Report</div>', unsafe_allow_html=True)
             
-            if lineup_data is not None:
-                missing_data = lineup_data.isnull().sum()
-                if missing_data.sum() > 0:
-                    st.warning(f"Found {missing_data.sum()} missing values across the dataset")
-                    st.dataframe(missing_data[missing_data > 0])
-                else:
-                    st.success("✅ No missing values detected in the dataset")
+            missing_data = discretized_data.isnull().sum()
+            if missing_data.sum() > 0:
+                st.warning(f"Found {missing_data.sum()} missing values across the dataset")
+                st.dataframe(missing_data[missing_data > 0])
+            else:
+                st.success("✅ No missing values detected in the dataset")
     
     else:
         st.error("Data not loaded successfully. Please check the data files.")
@@ -458,7 +478,7 @@ elif st.session_state.navigation == "🔗 Bayesian Network":
         st.markdown('<div class="subsection-header">Network Structure Visualization</div>', unsafe_allow_html=True)
         
         try:
-            # Define the DAG structure based on actual model
+            # Define the DAG structure based on actual model from notebook
             edges = [
                 ('PLAYMAKING_Talent', 'AST_rate'),
                 ('PLAYMAKING_Talent', 'TOV_rate'),
@@ -479,40 +499,54 @@ elif st.session_state.navigation == "🔗 Bayesian Network":
             
             # Create professional visualization
             fig, ax = plt.subplots(figsize=(14, 10))
-            pos = nx.spring_layout(G, k=2, iterations=100)
             
-            # Color nodes by type
-            talent_nodes = ['PLAYMAKING_Talent', 'SCORING_Talent', 'REBOUNDING_Talent', 'DEFENSIVE_Talent', 'NET_RATING_Talent']
-            metric_nodes = ['AST_rate', 'TOV_rate', 'ORB_rate', 'Shooting_Efficiency', 'Net_Rating_Impact']
+            # Use hierarchical layout as in notebook
+            pos = {
+                'SCORING_Talent': (-4, 2),
+                'PLAYMAKING_Talent': (-2, 2),
+                'REBOUNDING_Talent': (0, 2),
+                'DEFENSIVE_Talent': (2, 2),
+                'NET_RATING_Talent': (4, 2),
+                'Shooting_Efficiency': (-4, 0),
+                'AST_rate': (-2, 0),
+                'TOV_rate': (0, 0),
+                'ORB_rate': (2, 0),
+                'Net_Rating_Impact': (4, 0),
+                'Efficiency': (0, -2)
+            }
+            
+            # Color nodes by type (matching notebook colors)
+            talent_nodes = ['SCORING_Talent','PLAYMAKING_Talent','REBOUNDING_Talent','DEFENSIVE_Talent','NET_RATING_Talent']
+            observed_nodes = ['Shooting_Efficiency','AST_rate','TOV_rate','ORB_rate','Net_Rating_Impact']
             target_node = ['Efficiency']
             
             node_colors = []
             for node in G.nodes():
                 if node in talent_nodes:
-                    node_colors.append('#3498db')  # Blue for talents
-                elif node in metric_nodes:
-                    node_colors.append('#2ecc71')  # Green for metrics
+                    node_colors.append('#A29BFE')  # Purple for latent talent (matching notebook)
+                elif node in observed_nodes:
+                    node_colors.append('#55EFC4')  # Teal for observed performance (matching notebook)
                 else:
-                    node_colors.append('#e74c3c')  # Red for target
+                    node_colors.append('#FFEAA7')  # Yellow for target efficiency (matching notebook)
             
             nx.draw_networkx_nodes(G, pos, node_color=node_colors, 
-                                 node_size=3000, alpha=0.9, edgecolors='black', 
+                                 node_size=2800, alpha=0.9, edgecolors='black', 
                                  linewidths=2, ax=ax)
             nx.draw_networkx_edges(G, pos, edge_color='gray', arrows=True, 
-                                 arrowsize=25, width=2, alpha=0.7, ax=ax)
+                                 arrowsize=20, width=2, alpha=0.7, ax=ax)
             nx.draw_networkx_labels(G, pos, font_size=9, font_weight='bold', ax=ax)
             
-            ax.set_title("Discrete Bayesian Network Structure\nNBA Lineup Efficiency Model", 
-                        fontsize=18, fontweight='bold', pad=30)
+            ax.set_title("NBA Lineup Efficiency — Expanded Hierarchical DAG (PPP-based Efficiency)", 
+                        fontsize=16, fontweight='bold', pad=30)
             ax.axis('off')
             
             # Add legend
             legend_elements = [
-                plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='#3498db', markersize=10, label='Talent Variables'),
-                plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='#2ecc71', markersize=10, label='Performance Metrics'),
-                plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='#e74c3c', markersize=10, label='Target Variable')
+                plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='#A29BFE', markersize=10, label='Latent Talent'),
+                plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='#55EFC4', markersize=10, label='Observed Performance'),
+                plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='#FFEAA7', markersize=10, label='Target Efficiency')
             ]
-            ax.legend(handles=legend_elements, loc='upper right', frameon=True)
+            ax.legend(handles=legend_elements, loc='upper right', frameon=True, fontsize=10)
             
             plt.tight_layout()
             st.pyplot(fig)
@@ -555,24 +589,56 @@ elif st.session_state.navigation == "🔗 Bayesian Network":
         # Training Demo
         if st.button("🧠 Train Bayesian Network", use_container_width=True):
             with st.spinner("Training Discrete Bayesian Network..."):
-                progress_bar = st.progress(0)
-                status_text = st.empty()
-                
-                for i in range(100):
-                    progress_bar.progress(i + 1)
-                    status_text.text(f'Training progress: {i+1}%')
-                    # Simulate training delay
-                
-                status_text.text('Training completed successfully!')
-                st.success("""
-                ✅ Discrete Bayesian Network trained successfully!
-                
-                **Model Ready For:**
-                - Probabilistic inference
-                - Scenario analysis  
-                - Efficiency predictions
-                - Sensitivity analysis
-                """)
+                try:
+                    # Load and prepare data
+                    data = pd.read_csv("nba_lineups_expanded_discretized.csv")
+                    
+                    # Define order and ensure categorical
+                    order = ['Low', 'Medium', 'High']
+                    for col in data.columns:
+                        data[col] = pd.Categorical(data[col], categories=order, ordered=True)
+                    
+                    # Define edges (same as visualization)
+                    edges = [
+                        ('PLAYMAKING_Talent', 'AST_rate'),
+                        ('PLAYMAKING_Talent', 'TOV_rate'),
+                        ('SCORING_Talent', 'Shooting_Efficiency'),
+                        ('REBOUNDING_Talent', 'ORB_rate'),
+                        ('DEFENSIVE_Talent', 'Net_Rating_Impact'),
+                        ('NET_RATING_Talent', 'Net_Rating_Impact'),
+                        ('Net_Rating_Impact', 'Efficiency'),
+                        ('Shooting_Efficiency', 'Efficiency'),
+                        ('AST_rate', 'Efficiency'),
+                        ('TOV_rate', 'Efficiency'),
+                        ('ORB_rate', 'Efficiency')
+                    ]
+                    
+                    # Create and fit model
+                    model = BayesianNetwork(edges)
+                    model.fit(data, estimator=BayesianEstimator, 
+                             state_names={col: order for col in data.columns},
+                             equivalent_sample_size=10)
+                    
+                    # Create inference engine
+                    infer = VariableElimination(model)
+                    
+                    # Store in session state
+                    st.session_state.model_trained = True
+                    st.session_state.inference_engine = infer
+                    st.session_state.bn_model = model
+                    
+                    st.success("""
+                    ✅ Discrete Bayesian Network trained successfully!
+                    
+                    **Model Ready For:**
+                    - Probabilistic inference
+                    - Scenario analysis  
+                    - Efficiency predictions
+                    - Sensitivity analysis
+                    """)
+                    
+                except Exception as e:
+                    st.error(f"Training failed: {e}")
 
 # Lineup Simulator Section
 elif st.session_state.navigation == "🎮 Lineup Simulator":
@@ -587,52 +653,8 @@ elif st.session_state.navigation == "🎮 Lineup Simulator":
             st.warning("📁 Please upload 'nba_lineups_expanded_discretized.csv' for full functionality")
             return None
 
-    @st.cache_data
-    def fit_model(data):
-        if data is None:
-            return None, None
-        order = ['Low', 'Medium', 'High']
-        all_cols = [
-            'Net_Rating_Impact', 'Shooting_Efficiency', 'Efficiency',
-            'SCORING_Talent', 'PLAYMAKING_Talent', 'REBOUNDING_Talent',
-            'DEFENSIVE_Talent', 'NET_RATING_Talent',
-            'AST_rate', 'TOV_rate', 'ORB_rate'
-        ]
-        for col in all_cols:
-            if col in data.columns:
-                data[col] = pd.Categorical(data[col], categories=order, ordered=True)
-
-        edges = [
-            ('PLAYMAKING_Talent', 'AST_rate'),
-            ('PLAYMAKING_Talent', 'TOV_rate'),
-            ('SCORING_Talent', 'Shooting_Efficiency'),
-            ('REBOUNDING_Talent', 'ORB_rate'),
-            ('DEFENSIVE_Talent', 'Net_Rating_Impact'),
-            ('NET_RATING_Talent', 'Net_Rating_Impact'),
-            ('Net_Rating_Impact', 'Efficiency'),
-            ('Shooting_Efficiency', 'Efficiency'),
-            ('AST_rate', 'Efficiency'),
-            ('TOV_rate', 'Efficiency'),
-            ('ORB_rate', 'Efficiency')
-        ]
-
-        model = DiscreteBayesianNetwork(edges)
-        model.fit(data, estimator=BayesianEstimator,
-                  state_names={col: order for col in all_cols if col in data.columns},
-                  equivalent_sample_size=10)
-        return model, data
-
     data = load_simulator_data()
-    model, fitted_data = fit_model(data)
-
-    if model is None:
-        st.error("❌ Model initialization failed. Please check your dataset.")
-        st.info("Running in demo mode with heuristic predictions...")
-        demo_mode = True
-    else:
-        demo_mode = False
-        infer = VariableElimination(model)
-        order = ['Low', 'Medium', 'High']
+    order = ['Low', 'Medium', 'High']
 
     st.markdown('<div class="section-header">⚙️ Lineup Configuration</div>', unsafe_allow_html=True)
     
@@ -640,11 +662,11 @@ elif st.session_state.navigation == "🎮 Lineup Simulator":
     st.markdown("### 🎯 Current Configuration")
     config_cols = st.columns(3)
     with config_cols[0]:
-        st.metric("Shooting", st.session_state.simulator_values['shooting'])
+        st.metric("Shooting", st.session_state.simulator_values['Shooting_Efficiency'])
     with config_cols[1]:
-        st.metric("Defense", st.session_state.simulator_values['net_rating'])
+        st.metric("Defense", st.session_state.simulator_values['Net_Rating_Impact'])
     with config_cols[2]:
-        st.metric("Playmaking", st.session_state.simulator_values['ast_rate'])
+        st.metric("Playmaking", st.session_state.simulator_values['AST_rate'])
     
     # Manual Configuration
     st.markdown('<div class="subsection-header">⚙️ Manual Configuration</div>', unsafe_allow_html=True)
@@ -653,32 +675,32 @@ elif st.session_state.navigation == "🎮 Lineup Simulator":
         shooting_col, scoring_col = st.columns(2)
         with shooting_col:
             shooting = st.selectbox("Shooting Efficiency", order, 
-                                  index=order.index(st.session_state.simulator_values['shooting']))
+                                  index=order.index(st.session_state.simulator_values['Shooting_Efficiency']))
         with scoring_col:
             scoring = st.selectbox("Scoring Talent", order, 
-                                 index=order.index(st.session_state.simulator_values['scoring']))
+                                 index=order.index(st.session_state.simulator_values['SCORING_Talent']))
     
     with st.expander("🔄 Playmaking & Ball Control", expanded=True):
         play_col1, play_col2 = st.columns(2)
         with play_col1:
             ast_rate = st.selectbox("Assist Rate", order, 
-                                  index=order.index(st.session_state.simulator_values['ast_rate']))
+                                  index=order.index(st.session_state.simulator_values['AST_rate']))
         with play_col2:
             tov = st.selectbox("Turnover Rate", order, 
-                             index=order.index(st.session_state.simulator_values['tov']))
+                             index=order.index(st.session_state.simulator_values['TOV_rate']))
     
     with st.expander("🛡️ Defense & Rebounding"):
         def_col1, def_col2 = st.columns(2)
         with def_col1:
             net_rating = st.selectbox("Net Rating Impact", order, 
-                                    index=order.index(st.session_state.simulator_values['net_rating']))
+                                    index=order.index(st.session_state.simulator_values['Net_Rating_Impact']))
         with def_col2:
             orb_rate = st.selectbox("Offensive Rebound Rate", order, 
-                                  index=order.index(st.session_state.simulator_values['orb_rate']))
+                                  index=order.index(st.session_state.simulator_values['ORB_rate']))
     
     st.session_state.simulator_values.update({
-        'shooting': shooting, 'scoring': scoring, 'ast_rate': ast_rate,
-        'tov': tov, 'net_rating': net_rating, 'orb_rate': orb_rate
+        'Shooting_Efficiency': shooting, 'SCORING_Talent': scoring, 'AST_rate': ast_rate,
+        'TOV_rate': tov, 'Net_Rating_Impact': net_rating, 'ORB_rate': orb_rate
     })
     
     # Quick Presets
@@ -688,27 +710,37 @@ elif st.session_state.navigation == "🎮 Lineup Simulator":
     
     with preset_col1:
         if st.button("🏹\nElite Shooting", use_container_width=True, key="elite_shooting_btn"):
-            st.session_state.simulator_values.update({'shooting': 'High', 'scoring': 'High'})
+            st.session_state.simulator_values.update({
+                'Shooting_Efficiency': 'High', 
+                'SCORING_Talent': 'High'
+            })
             st.success("✅ Elite Shooting lineup configured!")
             st.rerun()
     
     with preset_col2:
         if st.button("🛡️\nLockdown Defense", use_container_width=True, key="defense_btn"):
-            st.session_state.simulator_values.update({'net_rating': 'High', 'tov': 'Low'})
+            st.session_state.simulator_values.update({
+                'Net_Rating_Impact': 'High', 
+                'TOV_rate': 'Low'
+            })
             st.success("✅ Lockdown Defense lineup configured!")
             st.rerun()
     
     with preset_col3:
         if st.button("🔄\nPlaymaker", use_container_width=True, key="playmaker_btn"):
-            st.session_state.simulator_values.update({'ast_rate': 'High', 'tov': 'Low'})
+            st.session_state.simulator_values.update({
+                'AST_rate': 'High', 
+                'TOV_rate': 'Low'
+            })
             st.success("✅ Playmaker lineup configured!")
             st.rerun()
     
     with preset_col4:
         if st.button("⚖️\nBalanced", use_container_width=True, key="balanced_btn"):
             st.session_state.simulator_values.update({
-                'shooting': 'Medium', 'scoring': 'Medium', 'ast_rate': 'Medium', 
-                'tov': 'Medium', 'net_rating': 'Medium', 'orb_rate': 'Medium'
+                'Shooting_Efficiency': 'Medium', 'SCORING_Talent': 'Medium', 
+                'AST_rate': 'Medium', 'TOV_rate': 'Medium', 
+                'Net_Rating_Impact': 'Medium', 'ORB_rate': 'Medium'
             })
             st.success("✅ Balanced lineup configured!")
             st.rerun()
@@ -718,41 +750,57 @@ elif st.session_state.navigation == "🎮 Lineup Simulator":
     # Results Section
     st.markdown('<div class="subsection-header">📊 Efficiency Prediction Results</div>', unsafe_allow_html=True)
     
-    if not demo_mode:
+    if st.session_state.model_trained and st.session_state.inference_engine is not None:
         # Calculate prediction using actual Bayesian Network
         evidence = {
-            'Shooting_Efficiency': st.session_state.simulator_values['shooting'],
-            'SCORING_Talent': st.session_state.simulator_values['scoring'],
-            'Net_Rating_Impact': st.session_state.simulator_values['net_rating'],
-            'TOV_rate': st.session_state.simulator_values['tov'],
-            'AST_rate': st.session_state.simulator_values['ast_rate'],
-            'ORB_rate': st.session_state.simulator_values['orb_rate']
+            'Shooting_Efficiency': st.session_state.simulator_values['Shooting_Efficiency'],
+            'SCORING_Talent': st.session_state.simulator_values['SCORING_Talent'],
+            'Net_Rating_Impact': st.session_state.simulator_values['Net_Rating_Impact'],
+            'TOV_rate': st.session_state.simulator_values['TOV_rate'],
+            'AST_rate': st.session_state.simulator_values['AST_rate'],
+            'ORB_rate': st.session_state.simulator_values['ORB_rate']
         }
-        evidence = {k: v for k, v in evidence.items() if k in model.nodes()}
-        q = infer.query(variables=['Efficiency'], evidence=evidence)
-        efficiency_score = q.values[2] * 100
-        probabilities = q.values
+        
+        # Filter evidence to only include variables that exist in the model
+        valid_evidence = {k: v for k, v in evidence.items() 
+                         if k in st.session_state.bn_model.nodes()}
+        
+        try:
+            q = st.session_state.inference_engine.query(
+                variables=['Efficiency'], 
+                evidence=valid_evidence
+            )
+            efficiency_score = q.values[2] * 100  # Probability of 'High' efficiency
+            probabilities = q.values
+        except Exception as e:
+            st.error(f"Inference error: {e}")
+            # Fallback to demo mode
+            efficiency_score = 50.0
+            probabilities = [0.3, 0.4, 0.3]
     else:
-        # Demo mode heuristic
+        # Demo mode heuristic (fallback)
+        st.info("🔧 Using heuristic prediction (train model for Bayesian inference)")
+        
         talent_score = sum([
-            2 if st.session_state.simulator_values['scoring'] == 'High' else 
-            1 if st.session_state.simulator_values['scoring'] == 'Medium' else 0,
-            2 if st.session_state.simulator_values['ast_rate'] == 'High' else 
-            1 if st.session_state.simulator_values['ast_rate'] == 'Medium' else 0
+            2 if st.session_state.simulator_values['SCORING_Talent'] == 'High' else 
+            1 if st.session_state.simulator_values['SCORING_Talent'] == 'Medium' else 0,
         ])
         
         performance_score = sum([
-            2 if st.session_state.simulator_values['shooting'] == 'High' else 
-            1 if st.session_state.simulator_values['shooting'] == 'Medium' else 0,
-            -2 if st.session_state.simulator_values['tov'] == 'High' else 
-            2 if st.session_state.simulator_values['tov'] == 'Low' else 0,
-            2 if st.session_state.simulator_values['net_rating'] == 'High' else 
-            1 if st.session_state.simulator_values['net_rating'] == 'Medium' else 0
+            2 if st.session_state.simulator_values['Shooting_Efficiency'] == 'High' else 
+            1 if st.session_state.simulator_values['Shooting_Efficiency'] == 'Medium' else 0,
+            -2 if st.session_state.simulator_values['TOV_rate'] == 'High' else 
+            2 if st.session_state.simulator_values['TOV_rate'] == 'Low' else 0,
+            2 if st.session_state.simulator_values['Net_Rating_Impact'] == 'High' else 
+            1 if st.session_state.simulator_values['Net_Rating_Impact'] == 'Medium' else 0,
+            1 if st.session_state.simulator_values['AST_rate'] == 'High' else 
+            0 if st.session_state.simulator_values['AST_rate'] == 'Medium' else -1,
+            1 if st.session_state.simulator_values['ORB_rate'] == 'High' else 0
         ])
         
         total_score = talent_score + performance_score
         efficiency_score = min(85, max(15, 50 + total_score * 5))
-        probabilities = [0.2, 0.3, 0.5]  # Demo probabilities
+        probabilities = [0.3, 0.4, 0.3]  # Demo probabilities
     
     # Results in columns
     result_col1, result_col2 = st.columns([1, 2])
