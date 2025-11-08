@@ -1,0 +1,6 @@
+streamlit
+pgmpy
+pandas
+numpy
+networkx
+# nba_api  # Uncomment if adding data-gen button
