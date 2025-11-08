@@ -987,99 +987,99 @@ else:
     </div>
     """, unsafe_allow_html=True)
 
-with tab2:
-    st.markdown('<div class="subsection-header">Model Validation Metrics</div>', unsafe_allow_html=True)
-    
-    metrics_data = {
-        'Metric': ['Accuracy', 'Precision', 'Recall', 'F1-Score', 'AUC-ROC'],
-        'Value': [0.82, 0.79, 0.84, 0.81, 0.88],
-        'Benchmark': [0.75, 0.70, 0.75, 0.72, 0.80]
-    }
-    
-    metrics_df = pd.DataFrame(metrics_data)
-    
-    # Display metrics
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.dataframe(metrics_df.style.format({'Value': '{:.2f}', 'Benchmark': '{:.2f}'}))
-    
-    with col2:
-        fig, ax = plt.subplots(figsize=(8, 6))
-        x = np.arange(len(metrics_df))
-        width = 0.35
+    with tab2:
+        st.markdown('<div class="subsection-header">Model Validation Metrics</div>', unsafe_allow_html=True)
         
-        bars1 = ax.bar(x - width/2, metrics_df['Value'], width, label='Our Model', 
-                       color='#1D428A', alpha=0.8, edgecolor='black')
-        bars2 = ax.bar(x + width/2, metrics_df['Benchmark'], width, label='Benchmark', 
-                       color='#C8102E', alpha=0.8, edgecolor='black')
+        metrics_data = {
+            'Metric': ['Accuracy', 'Precision', 'Recall', 'F1-Score', 'AUC-ROC'],
+            'Value': [0.82, 0.79, 0.84, 0.81, 0.88],
+            'Benchmark': [0.75, 0.70, 0.75, 0.72, 0.80]
+        }
         
-        ax.set_xlabel('Metrics', fontweight='bold')
-        ax.set_ylabel('Score', fontweight='bold')
-        ax.set_title('Model Performance vs Benchmark', fontweight='bold', pad=20)
-        ax.set_xticks(x)
-        ax.set_xticklabels(metrics_df['Metric'])
-        ax.legend()
-        ax.set_ylim(0, 1)
-        ax.grid(True, alpha=0.3, axis='y')
+        metrics_df = pd.DataFrame(metrics_data)
         
-        st.pyplot(fig)
+        # Display metrics
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.dataframe(metrics_df.style.format({'Value': '{:.2f}', 'Benchmark': '{:.2f}'}))
+        
+        with col2:
+            fig, ax = plt.subplots(figsize=(8, 6))
+            x = np.arange(len(metrics_df))
+            width = 0.35
+            
+            bars1 = ax.bar(x - width/2, metrics_df['Value'], width, label='Our Model', 
+                           color='#1D428A', alpha=0.8, edgecolor='black')
+            bars2 = ax.bar(x + width/2, metrics_df['Benchmark'], width, label='Benchmark', 
+                           color='#C8102E', alpha=0.8, edgecolor='black')
+            
+            ax.set_xlabel('Metrics', fontweight='bold')
+            ax.set_ylabel('Score', fontweight='bold')
+            ax.set_title('Model Performance vs Benchmark', fontweight='bold', pad=20)
+            ax.set_xticks(x)
+            ax.set_xticklabels(metrics_df['Metric'])
+            ax.legend()
+            ax.set_ylim(0, 1)
+            ax.grid(True, alpha=0.3, axis='y')
+            
+            st.pyplot(fig)
+        
+        st.markdown("""
+        <div class="insight-card">
+        <h3>💡 Practical Applications</h3>
+        
+        <p><strong>For Coaches & Analysts:</strong></p>
+        <ul>
+        <li><strong>Lineup Optimization:</strong> Identify optimal player combinations for specific game situations</li>
+        <li><strong>Substitution Strategy:</strong> Make data-driven decisions about when to substitute players</li>
+        <li><strong>Matchup Analysis:</strong> Predict lineup performance against specific opponent configurations</li>
+        </ul>
+        
+        <p><strong>For Player Development:</strong></p>
+        <ul>
+        <li>Identify which skills most impact lineup efficiency</li>
+        <li>Focus training on high-leverage abilities</li>
+        <li>Understand complementary skill sets</li>
+        </ul>
+        </div>
+        """, unsafe_allow_html=True)
     
-    st.markdown("""
-    <div class="insight-card">
-    <h3>💡 Practical Applications</h3>
-    
-    <p><strong>For Coaches & Analysts:</strong></p>
-    <ul>
-    <li><strong>Lineup Optimization:</strong> Identify optimal player combinations for specific game situations</li>
-    <li><strong>Substitution Strategy:</strong> Make data-driven decisions about when to substitute players</li>
-    <li><strong>Matchup Analysis:</strong> Predict lineup performance against specific opponent configurations</li>
-    </ul>
-    
-    <p><strong>For Player Development:</strong></p>
-    <ul>
-    <li>Identify which skills most impact lineup efficiency</li>
-    <li>Focus training on high-leverage abilities</li>
-    <li>Understand complementary skill sets</li>
-    </ul>
-    </div>
-    """, unsafe_allow_html=True)
-
-with tab3:
-    st.markdown("""
-    <div class="insight-card">
-    <h3>🔮 Research Roadmap & Future Work</h3>
-    
-    <p><strong>⚡ Next Phase Enhancements:</strong></p>
-    <ul>
-    <li><strong>Real-time opponent-adjusted metrics</strong> for dynamic analysis</li>
-    <li><strong>Player chemistry and fit analysis</strong> using advanced network theory</li>
-    <li><strong>Fatigue and back-to-back factors</strong> incorporating player workload</li>
-    <li><strong>Possession-level granular analysis</strong> for micro-adjustments</li>
-    </ul>
-    
-    <p><strong>🎯 Long-term Vision:</strong></p>
-    <ul>
-    <li><strong>Predictive lineup optimization</strong> using reinforcement learning</li>
-    <li><strong>Dynamic in-game adjustments</strong> with real-time Bayesian updating</li>
-    <li><strong>AI-powered talent evaluation</strong> for draft and free agency</li>
-    <li><strong>Integration with player tracking data</strong> for spatial analysis</li>
-    </ul>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
-    <div class="feature-card">
-    <h4>📋 Current Limitations</h4>
-    <ul>
-    <li>Limited to 5-man lineup analysis</li>
-    <li>Doesn't account for opponent strength variations</li>
-    <li>Based primarily on regular season data</li>
-    <li>Simplified talent discretization approach</li>
-    <li>Static analysis without game flow context</li>
-    </ul>
-    </div>
-    """, unsafe_allow_html=True)
+    with tab3:
+        st.markdown("""
+        <div class="insight-card">
+        <h3>🔮 Research Roadmap & Future Work</h3>
+        
+        <p><strong>⚡ Next Phase Enhancements:</strong></p>
+        <ul>
+        <li><strong>Real-time opponent-adjusted metrics</strong> for dynamic analysis</li>
+        <li><strong>Player chemistry and fit analysis</strong> using advanced network theory</li>
+        <li><strong>Fatigue and back-to-back factors</strong> incorporating player workload</li>
+        <li><strong>Possession-level granular analysis</strong> for micro-adjustments</li>
+        </ul>
+        
+        <p><strong>🎯 Long-term Vision:</strong></p>
+        <ul>
+        <li><strong>Predictive lineup optimization</strong> using reinforcement learning</li>
+        <li><strong>Dynamic in-game adjustments</strong> with real-time Bayesian updating</li>
+        <li><strong>AI-powered talent evaluation</strong> for draft and free agency</li>
+        <li><strong>Integration with player tracking data</strong> for spatial analysis</li>
+        </ul>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div class="feature-card">
+        <h4>📋 Current Limitations</h4>
+        <ul>
+        <li>Limited to 5-man lineup analysis</li>
+        <li>Doesn't account for opponent strength variations</li>
+        <li>Based primarily on regular season data</li>
+        <li>Simplified talent discretization approach</li>
+        <li>Static analysis without game flow context</li>
+        </ul>
+        </div>
+        """, unsafe_allow_html=True)
 
 st.markdown('</div>', unsafe_allow_html=True)  # Close main container
 
