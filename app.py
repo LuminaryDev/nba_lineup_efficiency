@@ -564,8 +564,21 @@ elif st.session_state.navigation == "🔗 Bayesian Network":
                     if current_high_pct < target_high_pct:
                         high_mask = (data['Efficiency'] == 'High')
                         num_to_add = min(int(len(data) * (target_high_pct - current_high_pct) / (1 - target_high_pct)), len(data) // 2)  # Cap at 50% data size
-                        if num_to_add > 0 and high_mask.sum() > 0:
-                            oversample = data[high_mask].sample(n=num_to_add, replace=True, random_state=42)
+                        if num_to_add > 0:
+                            if high_mask.sum() > 0:
+                                oversample = data[high_mask].sample(n=num_to_add, replace=True, random_state=42)
+                            else:
+                                med_mask = (data['Efficiency'] == 'Medium')
+                                if med_mask.sum() > 0:
+                                    synth_high = data[med_mask].sample(n=num_to_add, replace=True, random_state=42).copy()
+                                    synth_high['Efficiency'] = 'High'
+                                    oversample = synth_high
+                                else:
+                                    # Last resort: Flip Low
+                                    low_mask = (data['Efficiency'] == 'Low')
+                                    synth_high = data[low_mask].sample(n=num_to_add, replace=True, random_state=42).copy()
+                                    synth_high['Efficiency'] = 'High'
+                                    oversample = synth_high
                             data = pd.concat([data, oversample]).reset_index(drop=True)
                             st.info(f"🔧 Mild balance: Added {len(oversample)} High samples (now ~{target_high_pct*100:.0f}% High)")
                     
