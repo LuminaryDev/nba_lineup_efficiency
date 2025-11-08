@@ -951,7 +951,7 @@ else:
         'Strength': [0.85, 0.78, -0.72, 0.81, 0.76]
     }
         
-        relationships_df = pd.DataFrame(relationships_data)
+    relationships_df = pd.DataFrame(relationships_data)
         
         fig, ax = plt.subplots(figsize=(10, 6))
         relationships_df = relationships_df.sort_values('Strength', ascending=True)
