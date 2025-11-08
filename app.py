@@ -827,16 +827,16 @@ elif st.session_state.navigation == "📈 Results & Insights":
                 delta = (q_s.values[2] - base_high) * 100
                 sens_data.append({'Factor': label, 'Δ P(High)': f"{delta:+.1f}%"})
             
-        df_sens = pd.DataFrame(sens_data).sort_values('Δ P(High)', key=lambda x: x.str.rstrip('%').astype(float), ascending=False)
-        st.table(df_sens)
-    else:
-        st.markdown("""
-        <ul>
-        <li><strong>Shooting Dominance</strong>: +64% boost to high efficiency – prioritize 3PT threats!</li>
-        <li><strong>Turnover Control</strong>: Next biggest lever (+16%) - ball security is crucial</li>
-        <li><strong>Net Rating Impact</strong>: Defensive efficiency contributes +12% to overall efficiency</li>
-        </ul>
-        """, unsafe_allow_html=True)
+            df_sens = pd.DataFrame(sens_data).sort_values('Δ P(High)', key=lambda x: x.str.rstrip('%').astype(float), ascending=False)
+            st.table(df_sens)
+        else:
+            st.markdown("""
+            <ul>
+            <li><strong>Shooting Dominance</strong>: +64% boost to high efficiency – prioritize 3PT threats!</li>
+            <li><strong>Turnover Control</strong>: Next biggest lever (+16%) - ball security is crucial</li>
+            <li><strong>Net Rating Impact</strong>: Defensive efficiency contributes +12% to overall efficiency</li>
+            </ul>
+            """, unsafe_allow_html=True)
         
         st.markdown("</div>", unsafe_allow_html=True)
         
@@ -1003,3 +1003,4 @@ st.markdown("""
     </div>
 </div>
 """, unsafe_allow_html=True)
+
