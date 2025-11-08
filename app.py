@@ -117,10 +117,14 @@ else:
     q = infer.query(variables=['Efficiency'], evidence=evidence)
     probs = pd.Series(q.values, index=order) * 100  # % for display
 
-    # Main: Chart + Full Distrib Text + Δ
+    # Main: Chart + Full Distrib Text + Δ (Fixed Metric)
     st.header(f"Scenario: {scenario}")
     delta_high = (q.values[2] - base_high) * 100
-    st.metric("Δ P(High Efficiency)", f"{delta_high:+.1f}%", label=f"vs. Baseline ({base_high*100:.1f}%)")
+    st.metric(
+        label="Δ P(High Efficiency)",
+        value=f"{delta_high:+.1f}%",
+        help=f"vs. Baseline ({base_high*100:.1f}%)"  # Fixed: Use 'help' for note (hover to see)
+    )
 
     col1, col2, col3 = st.columns(3)
     with col1: st.metric("P(Low)", f"{probs[0]:.1f}%")
