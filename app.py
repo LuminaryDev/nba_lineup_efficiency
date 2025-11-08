@@ -71,7 +71,7 @@ st.markdown("""
         background: linear-gradient(135deg, #B7C9E2 100%);
         padding: 1.8rem;
         border-radius: 12px;
-        border-left: 5px solid #ffc107;
+        border-left: 5px solid;
         margin: 1rem 0;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
     }
