@@ -826,8 +826,7 @@ elif st.session_state.navigation == "📈 Results & Insights":
                 delta = (q_s.values[2] - base_high) * 100
                 sens_data.append({'Factor': label, 'Δ P(High)': f"{delta:+.1f}%"})
             
-            df_sens = pd.DataFrame(sens_data).sort_values('Δ P(High)', key=lambda x: float(x.str.rstrip('%').str.replace('+', '').str.replace('-', '-')), ascending=False)
-            st.table(df_sens)
+        df_sens = pd.DataFrame(sens_data).sort_values('Δ P(High)', key=lambda x: x.str.rstrip('%').astype(float), ascending=False)            st.table(df_sens)
         else:
             st.markdown("""
             <ul>
