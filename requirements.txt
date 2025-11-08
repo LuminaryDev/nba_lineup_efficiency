@@ -3,4 +3,5 @@ pgmpy
 pandas
 numpy
 networkx
+matplotlib
 # nba_api  # Uncomment if adding data-gen button
