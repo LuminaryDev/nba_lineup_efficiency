@@ -828,6 +828,7 @@ elif st.session_state.navigation == "📈 Results & Insights":
             
         df_sens = pd.DataFrame(sens_data).sort_values('Δ P(High)', key=lambda x: x.str.rstrip('%').astype(float), ascending=False)
         st.table(df_sens)
+        
         else:
             st.markdown("""
             <ul>
