@@ -552,11 +552,19 @@ elif st.session_state.navigation == "🔗 Bayesian Network":
                         data[col] = pd.Categorical(data[col], categories=order, ordered=True)
 
                     # Balance High Efficiency (from skewed data - matches notebook Phase 2 intent)
-                    high_mask = (data['Efficiency'] == 'High')
-                    if high_mask.sum() < len(data) * 0.2:  # If <20% High, oversample
-                        oversample_frac = (0.2 / high_mask.mean()) - 1
-                        oversample = data[high_mask].sample(frac=oversample_frac, replace=True, random_state=42)
+                    # high_mask = (data['Efficiency'] == 'High')
+                    # if high_mask.sum() < len(data) * 0.2:  # If <20% High, oversample
+                    #     oversample_frac = (0.2 / high_mask.mean()) - 1
+                    #     oversample = data[high_mask].sample(frac=oversample_frac, replace=True, random_state=42)
+                    #     data = pd.concat([data, oversample]).reset_index(drop=True)
+                    current_high_pct = (data['Efficiency'] == 'High').mean()
+                    target_high_pct = 0.25
+                    if current_high_pct < target_high_pct:
+                        high_mask = (data['Efficiency'] == 'High')
+                        num_to_add = int(len(data) * (target_high_pct - current_high_pct) / (1 - target_high_pct))
+                        oversample = data[high_mask].sample(n=num_to_add, replace=True, random_state=42)
                         data = pd.concat([data, oversample]).reset_index(drop=True)
+                        st.info(f"🔧 Forced balance: Added {len(oversample)} High samples (now {target_high_pct*100:.0f}% High)")
                     
                     edges = [
                         ('PLAYMAKING_Talent', 'AST_rate'),
