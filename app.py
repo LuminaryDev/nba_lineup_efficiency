@@ -38,11 +38,23 @@ section = st.sidebar.radio(
 @st.cache_data
 def load_data():
     try:
-        lineup_data = pd.read_csv('nba_lineups_2024_api.csv')  # Fixed: Original notebook name
+        # Robust path: Try current dir or full list files for debug
+        import os
+        current_dir = os.getcwd()
+        st.info(f"Working dir: {current_dir}")  # Debug: Shows repo root
+        
+        # List files for debug (remove after fix)
+        files = os.listdir('.')
+        st.info(f"Files in repo: {files}")  # Shows all files – confirm CSVs listed
+        
+        lineup_data = pd.read_csv('nba_lineups_2024_api.csv')
         discretized_data = pd.read_csv('nba_lineups_expanded_discretized.csv')
         return lineup_data, discretized_data
-    except:
-        st.error("Data files not found. Please ensure 'nba_lineups_2024_api.csv' and 'nba_lineups_expanded_discretized.csv' are in the repo.")
+    except FileNotFoundError as e:
+        st.error(f"File not found: {e}. Check case/repo root. Files: {os.listdir('.') if 'os' in locals() else 'N/A'}")
+        return None, None
+    except Exception as e:
+        st.error(f"Load error: {e}")
         return None, None
 
 lineup_data, discretized_data = load_data()
