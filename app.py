@@ -68,7 +68,7 @@ st.markdown("""
     }
     
     .insight-card {
-        background: linear-gradient(135deg, #fff3cd 0%, #B7C9E2 100%);
+        background: linear-gradient(135deg, #B7C9E2 100%);
         padding: 1.8rem;
         border-radius: 12px;
         border-left: 5px solid #ffc107;
