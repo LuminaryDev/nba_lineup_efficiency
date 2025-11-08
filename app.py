@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from pgmpy.models import BayesianNetwork
+from pgmpy.models import DiscreteBayesianNetwork  # Fixed: Use DiscreteBayesianNetwork
 from pgmpy.estimators import BayesianEstimator
 from pgmpy.inference import VariableElimination
 import warnings
@@ -49,7 +49,7 @@ def fit_model(data):
         ('ORB_rate', 'Efficiency')
     ]
 
-    model = BayesianNetwork(edges)
+    model = DiscreteBayesianNetwork(edges)  # Fixed: Use DiscreteBayesianNetwork
     model.fit(data, estimator=BayesianEstimator,
               state_names={col: order for col in all_cols},
               equivalent_sample_size=10)
