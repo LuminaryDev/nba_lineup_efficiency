@@ -57,7 +57,7 @@ def fit_model(data):
 
 # Load & Fit
 data = load_data()
-model, fitted_data = fit_model(data)  # Use fitted_data for consistency
+model, fitted_data = fit_model(data)
 
 if model is None:
     st.error("❌ Model not ready. Upload data or add data-gen code.")
@@ -120,9 +120,13 @@ else:
             ev = {**baseline_ev, var: val}
             q_s = infer.query(variables=['Efficiency'], evidence=ev)
             delta = q_s.values[2] - base_high
-            sens_data.append({'Factor': label, 'Δ P(High)': f"{delta:+.1%}"})
+            sens_data.append({
+                'Factor': label, 
+                'Delta_Num': delta,  # Numeric for sorting
+                'Δ P(High)': f"{delta*100:+.1f}%"
+            })
 
-        df_sens = pd.DataFrame(sens_data).sort_values('Δ P(High)', key=lambda x: float(x.str.rstrip('%').str.replace('+', '')), ascending=False)
+        df_sens = pd.DataFrame(sens_data).sort_values('Delta_Num', ascending=False)[['Factor', 'Δ P(High)']]
         st.table(df_sens)
 
     with tab2:
