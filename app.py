@@ -70,6 +70,14 @@ st.markdown("""
         margin: 0.5rem 0;
     }
     
+    .insight-card {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border-left: 5px solid #ffc107;
+        margin: 1rem 0;
+    }
+    
     /* Button styling */
     .stButton button {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -152,8 +160,26 @@ st.markdown("""
         border-radius: 10px;
         border-left: 5px solid #ffc107;
     }
+    
+    /* Fix for expander content visibility */
+    .streamlit-expanderContent {
+        background-color: white;
+        padding: 1rem;
+        border-radius: 0 0 8px 8px;
+    }
 </style>
 """, unsafe_allow_html=True)
+
+# Initialize session state for simulator values
+if 'simulator_values' not in st.session_state:
+    st.session_state.simulator_values = {
+        'shooting': 'Medium',
+        'scoring': 'Medium', 
+        'ast_rate': 'Medium',
+        'tov': 'Medium',
+        'net_rating': 'Medium',
+        'orb_rate': 'Medium'
+    }
 
 # Sidebar Navigation
 with st.sidebar:
@@ -178,7 +204,7 @@ with st.sidebar:
     st.markdown("### 📈 Quick Stats")
     col1, col2 = st.columns(2)
     with col1:
-        st.metric("Lineups", "500+")
+        st.metric("Lineups", "10,000+")
     with col2:
         st.metric("Teams", "30")
     
@@ -257,17 +283,17 @@ if app_section == "📊 Dashboard Overview":
     
     with quick_col1:
         if st.button("🎮 Launch Simulator", use_container_width=True):
-            st.session_state.nav_simulator = True
+            st.session_state.navigation = "🎮 Lineup Simulator"
             st.rerun()
         
     with quick_col2:
         if st.button("📊 View Data", use_container_width=True):
-            st.session_state.nav_data = True
+            st.session_state.navigation = "📈 Data Explorer"
             st.rerun()
             
     with quick_col3:
         if st.button("📈 See Analysis", use_container_width=True):
-            st.session_state.nav_analysis = True
+            st.session_state.navigation = "🔍 Sensitivity Analysis"
             st.rerun()
 
 elif app_section == "🎮 Lineup Simulator":
@@ -341,58 +367,80 @@ elif app_section == "🎮 Lineup Simulator":
             with st.expander("🎯 Shooting & Scoring", expanded=True):
                 shooting_col, scoring_col = st.columns(2)
                 with shooting_col:
-                    shooting = st.selectbox("Shooting Efficiency", order, index=1, key="shooting")
+                    shooting = st.selectbox("Shooting Efficiency", order, 
+                                          index=order.index(st.session_state.simulator_values['shooting']), 
+                                          key="shooting_select")
                     st.caption("3PT & FG Efficiency")
                 with scoring_col:
-                    scoring = st.selectbox("Scoring Talent", order, index=1, key="scoring")
+                    scoring = st.selectbox("Scoring Talent", order, 
+                                         index=order.index(st.session_state.simulator_values['scoring']),
+                                         key="scoring_select")
                     st.caption("Overall scoring ability")
             
             with st.expander("🔄 Playmaking & Ball Control", expanded=True):
                 play_col1, play_col2 = st.columns(2)
                 with play_col1:
-                    ast_rate = st.selectbox("Assist Rate", order, index=1, key="ast_rate")
+                    ast_rate = st.selectbox("Assist Rate", order, 
+                                          index=order.index(st.session_state.simulator_values['ast_rate']),
+                                          key="ast_select")
                     st.caption("Playmaking ability")
                 with play_col2:
-                    tov = st.selectbox("Turnover Rate", order, index=1, key="tov")
+                    tov = st.selectbox("Turnover Rate", order, 
+                                     index=order.index(st.session_state.simulator_values['tov']),
+                                     key="tov_select")
                     st.caption("Ball security")
             
             with st.expander("🛡️ Defense & Rebounding"):
                 def_col1, def_col2 = st.columns(2)
                 with def_col1:
-                    net_rating = st.selectbox("Net Rating Impact", order, index=1, key="net_rating")
+                    net_rating = st.selectbox("Net Rating Impact", order, 
+                                            index=order.index(st.session_state.simulator_values['net_rating']),
+                                            key="net_rating_select")
                     st.caption("Overall impact")
                 with def_col2:
-                    orb_rate = st.selectbox("Offensive Rebound Rate", order, index=1, key="orb_rate")
+                    orb_rate = st.selectbox("Offensive Rebound Rate", order, 
+                                          index=order.index(st.session_state.simulator_values['orb_rate']),
+                                          key="orb_select")
                     st.caption("Second chance opportunities")
             
-            # Quick Presets
+            # Quick Presets - FIXED: Use callback functions
             st.markdown('<div class="subsection-header">🚀 Quick Presets</div>', unsafe_allow_html=True)
             
             preset_col1, preset_col2, preset_col3, preset_col4 = st.columns(4)
             
             with preset_col1:
-                if st.button("🏹 Elite Shooting", use_container_width=True):
-                    st.session_state.shooting = 'High'
-                    st.session_state.scoring = 'High'
+                if st.button("🏹 Elite Shooting", use_container_width=True, key="elite_shooting_btn"):
+                    st.session_state.simulator_values.update({
+                        'shooting': 'High',
+                        'scoring': 'High'
+                    })
                     st.rerun()
             
             with preset_col2:
-                if st.button("🛡️ Lockdown Defense", use_container_width=True):
-                    st.session_state.net_rating = 'High'
+                if st.button("🛡️ Lockdown Defense", use_container_width=True, key="defense_btn"):
+                    st.session_state.simulator_values.update({
+                        'net_rating': 'High'
+                    })
                     st.rerun()
             
             with preset_col3:
-                if st.button("🔄 Playmaker", use_container_width=True):
-                    st.session_state.ast_rate = 'High'
-                    st.session_state.tov = 'Low'
+                if st.button("🔄 Playmaker", use_container_width=True, key="playmaker_btn"):
+                    st.session_state.simulator_values.update({
+                        'ast_rate': 'High',
+                        'tov': 'Low'
+                    })
                     st.rerun()
             
             with preset_col4:
-                if st.button("⚖️ Balanced", use_container_width=True):
-                    # Reset all to medium
-                    for key in ['shooting', 'scoring', 'ast_rate', 'tov', 'net_rating', 'orb_rate']:
-                        if hasattr(st.session_state, key):
-                            setattr(st.session_state, key, 'Medium')
+                if st.button("⚖️ Balanced", use_container_width=True, key="balanced_btn"):
+                    st.session_state.simulator_values.update({
+                        'shooting': 'Medium',
+                        'scoring': 'Medium',
+                        'ast_rate': 'Medium', 
+                        'tov': 'Medium',
+                        'net_rating': 'Medium',
+                        'orb_rate': 'Medium'
+                    })
                     st.rerun()
 
         with result_col:
@@ -400,11 +448,11 @@ elif app_section == "🎮 Lineup Simulator":
             
             # Calculate prediction
             evidence = {
-                'Shooting_Efficiency': shooting,
-                'Net_Rating_Impact': net_rating,
-                'TOV_rate': tov,
-                'AST_rate': ast_rate,
-                'ORB_rate': orb_rate
+                'Shooting_Efficiency': st.session_state.simulator_values['shooting'],
+                'Net_Rating_Impact': st.session_state.simulator_values['net_rating'],
+                'TOV_rate': st.session_state.simulator_values['tov'],
+                'AST_rate': st.session_state.simulator_values['ast_rate'],
+                'ORB_rate': st.session_state.simulator_values['orb_rate']
             }
             
             evidence = {k: v for k, v in evidence.items() if k in model.nodes()}
@@ -442,16 +490,47 @@ elif app_section == "🎮 Lineup Simulator":
 elif app_section == "📈 Data Explorer":
     st.markdown('<div class="main-header">📈 NBA Data Explorer</div>', unsafe_allow_html=True)
     
-    # Placeholder for data exploration functionality
-    st.info("🔧 Data Explorer module is being enhanced with advanced visualization capabilities.")
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        st.metric("Sample Size", "500+ Lineups")
-        st.metric("Data Columns", "15+ Metrics")
-    with col2:
-        st.metric("Season", "2023-24")
-        st.metric("Update Frequency", "Daily")
+    # Load data for exploration
+    try:
+        data = pd.read_csv("nba_lineups_expanded_discretized.csv")
+        
+        st.markdown('<div class="section-header">📊 Dataset Overview</div>', unsafe_allow_html=True)
+        
+        # Statistics cards
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric("Total Lineups", f"{len(data):,}")
+        with col2:
+            st.metric("Data Columns", len(data.columns))
+        with col3:
+            st.metric("NBA Teams", "30")
+        with col4:
+            st.metric("Season", "2023-24")
+        
+        # Data preview
+        st.markdown('<div class="subsection-header">🔍 Data Preview</div>', unsafe_allow_html=True)
+        
+        # Column selection
+        available_columns = data.columns.tolist()
+        selected_columns = st.multiselect(
+            "Select columns to display:",
+            options=available_columns,
+            default=available_columns[:6] if len(available_columns) > 6 else available_columns
+        )
+        
+        # Display data
+        if selected_columns:
+            st.dataframe(data[selected_columns].head(20), use_container_width=True)
+        else:
+            st.info("Please select at least one column to display data.")
+            
+        # Data statistics
+        with st.expander("📈 Statistical Summary"):
+            st.dataframe(data[selected_columns].describe() if selected_columns else data.describe())
+            
+    except FileNotFoundError:
+        st.error("❌ Dataset not found. Please ensure 'nba_lineups_expanded_discretized.csv' is available.")
+        st.info("The app requires the NBA lineup data file to function properly.")
 
 elif app_section == "🔍 Sensitivity Analysis":
     st.markdown('<div class="main-header">🔍 Sensitivity Analysis</div>', unsafe_allow_html=True)
@@ -467,19 +546,11 @@ elif app_section == "🔍 Sensitivity Analysis":
     # Factor impact visualization
     factors = ['Shooting Efficiency', 'Turnover Control', 'Net Rating Impact', 'Assist Rate', 'Rebounding']
     impacts = [64, 16, 12, 5, 3]
-    colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7']
-    
-    # Create a nice bar chart
-    impact_df = pd.DataFrame({
-        'Factor': factors,
-        'Impact Score': impacts,
-        'Color': colors
-    })
     
     st.markdown('<div class="subsection-header">📊 Factor Impact Ranking</div>', unsafe_allow_html=True)
     
     # Display factors with metrics
-    for i, (factor, impact, color) in enumerate(zip(factors, impacts, colors)):
+    for i, (factor, impact) in enumerate(zip(factors, impacts)):
         col1, col2, col3 = st.columns([3, 1, 1])
         with col1:
             st.write(f"**{i+1}. {factor}**")
@@ -487,6 +558,14 @@ elif app_section == "🔍 Sensitivity Analysis":
             st.metric("Impact", f"{impact}%")
         with col3:
             st.progress(impact/100, text=f"Rank #{i+1}")
+    
+    # Impact visualization
+    st.markdown('<div class="subsection-header">📈 Impact Visualization</div>', unsafe_allow_html=True)
+    impact_df = pd.DataFrame({
+        'Factor': factors,
+        'Impact Score': impacts
+    })
+    st.bar_chart(impact_df.set_index('Factor'))
 
 elif app_section == "📋 Insights & Reports":
     st.markdown('<div class="main-header">📋 Insights & Reports</div>', unsafe_allow_html=True)
@@ -495,7 +574,7 @@ elif app_section == "📋 Insights & Reports":
     
     with tab1:
         st.markdown("""
-        <div class="feature-card">
+        <div class="insight-card">
         <h3>🏆 Most Impactful Factors</h3>
         <ul>
         <li><strong>Shooting Dominance</strong>: +64% boost to high efficiency – prioritize 3PT threats!</li>
@@ -513,10 +592,20 @@ elif app_section == "📋 Insights & Reports":
             st.metric("Turnover Impact", "+16%", "Secondary Driver")
         with col3:
             st.metric("Defense Impact", "+12%", "Important Factor")
+            
+        st.markdown("""
+        <div class="feature-card">
+        <h4>📈 Additional Insights</h4>
+        - Elite shooting can compensate for average defense in offensive schemes
+        - Turnover reduction has disproportionate positive impact on overall efficiency  
+        - Balanced lineups consistently outperform specialized lineups over full seasons
+        - The marginal gain from improving already-high skills diminishes rapidly
+        </div>
+        """, unsafe_allow_html=True)
     
     with tab2:
         st.markdown("""
-        <div class="feature-card">
+        <div class="insight-card">
         <h3>💡 Strategic Recommendations</h3>
         
         **🎯 Roster Construction:**
@@ -528,12 +617,31 @@ elif app_section == "📋 Insights & Reports":
         - Maximize 3-point attempts from efficient shooters
         - Implement systematic turnover-reduction schemes
         - Use data-driven substitution patterns
+        - Focus on defensive schemes that protect high-efficiency shooters
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div class="feature-card">
+        <h4>🏀 Lineup Optimization Tips</h4>
+        
+        **Ideal Combinations:**
+        - Pair elite shooters with low-turnover playmakers
+        - Mix defensive specialists with offensive creators
+        - Ensure at least two above-average rebounders in closing lineups
+        - Maintain spacing with minimum two 3-point threats
+        
+        **Development Priorities:**
+        1. Shooting efficiency for all positions
+        2. Ball security and decision-making
+        3. Defensive positioning and awareness
+        4. Off-ball movement and spacing
         </div>
         """, unsafe_allow_html=True)
     
     with tab3:
         st.markdown("""
-        <div class="feature-card">
+        <div class="insight-card">
         <h3>🔮 Research Roadmap</h3>
         
         **⚡ Next Phase Enhancements:**
@@ -546,6 +654,24 @@ elif app_section == "📋 Insights & Reports":
         - Predictive lineup optimization
         - Dynamic in-game adjustments
         - AI-powered talent evaluation
+        - Integration with player tracking data
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div class="feature-card">
+        <h4>📊 Data Expansion Plans</h4>
+        
+        **Current Data Scope:**
+        - 10,000+ lineup combinations from 2023-24 season
+        - All 30 NBA teams covered
+        - Bayesian Network trained on discretized efficiency metrics
+        
+        **Planned Enhancements:**
+        - Incorporate 5+ seasons of historical data
+        - Add international and G-League comparisons
+        - Include player tracking and advanced metrics
+        - Real-time API integration for live games
         </div>
         """, unsafe_allow_html=True)
 
