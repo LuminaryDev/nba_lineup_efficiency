@@ -37,26 +37,32 @@ section = st.sidebar.radio(
 # Load data
 @st.cache_data
 def load_data():
+    import os
     try:
-        # Robust path: Try current dir or full list files for debug
-        import os
-        current_dir = os.getcwd()
-        st.info(f"Working dir: {current_dir}")  # Debug: Shows repo root
+        # Debug: File sizes
+        raw_size = os.path.getsize('nba_lineups_2024_api.csv')
+        disc_size = os.path.getsize('nba_lineups_expanded_discretized.csv')
+        st.info(f"Raw CSV size: {raw_size} bytes | Discretized size: {disc_size} bytes")
         
-        # List files for debug (remove after fix)
-        files = os.listdir('.')
-        st.info(f"Files in repo: {files}")  # Shows all files – confirm CSVs listed
+        if raw_size == 0 or disc_size == 0:
+            st.error("CSV empty (0 bytes) – re-run Colab Phase 1/2 to regenerate.")
+            return None, None
         
-        lineup_data = pd.read_csv('nba_lineups_2024_api.csv')
-        discretized_data = pd.read_csv('nba_lineups_expanded_discretized.csv')
+        lineup_data = pd.read_csv('nba_lineups_2024_api.csv', header=0)  # Explicit header
+        discretized_data = pd.read_csv('nba_lineups_expanded_discretized.csv', header=0)
+        
+        # Preview first rows
+        st.info(f"Raw head:\n{lineup_data.head(1)}")
+        st.info(f"Discretized head:\n{discretized_data.head(1)}")
+        
         return lineup_data, discretized_data
-    except FileNotFoundError as e:
-        st.error(f"File not found: {e}. Check case/repo root. Files: {os.listdir('.') if 'os' in locals() else 'N/A'}")
+    except pd.errors.EmptyDataError:
+        st.error("CSV empty – regenerate in Colab.")
         return None, None
     except Exception as e:
-        st.error(f"Load error: {e}")
+        st.error(f"Load error: {e} – Check headers/rows in CSV.")
         return None, None
-
+        
 lineup_data, discretized_data = load_data()
 
 if section == "Introduction":
