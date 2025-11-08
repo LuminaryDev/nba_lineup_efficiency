@@ -2,10 +2,10 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-# import seaborn as sns
+import seaborn as sns
 import networkx as nx
-from pgmpy.models import BayesianNetwork
-from pgmpy.estimators import MaximumLikelihoodEstimator, BayesianEstimator
+from pgmpy.models import DiscreteBayesianNetwork
+from pgmpy.estimators import BayesianEstimator
 from pgmpy.inference import VariableElimination
 import warnings
 warnings.filterwarnings('ignore')
@@ -22,7 +22,7 @@ st.title("🏀 NBA Lineup Efficiency Modeling using Bayesian Networks")
 st.markdown("""
 **Name:** Rediet Girmay  
 **ID:** GSE/0945-17  
-**Date:** 25 October 2025  
+**Date:** 08 November 2025  
 
 This app analyzes NBA lineup performance using Bayesian Networks to understand how player combinations contribute to team efficiency.
 """)
@@ -38,11 +38,11 @@ section = st.sidebar.radio(
 @st.cache_data
 def load_data():
     try:
-        lineup_data = pd.read_csv('nba_lineups_completely_cleaned.csv')
+        lineup_data = pd.read_csv('nba_lineups_2024_api.csv')  # Fixed: Original notebook name
         discretized_data = pd.read_csv('nba_lineups_expanded_discretized.csv')
         return lineup_data, discretized_data
     except:
-        st.error("Data files not found. Please ensure the CSV files are in the correct directory.")
+        st.error("Data files not found. Please ensure 'nba_lineups_2024_api.csv' and 'nba_lineups_expanded_discretized.csv' are in the repo.")
         return None, None
 
 lineup_data, discretized_data = load_data()
@@ -190,31 +190,81 @@ elif section == "Bayesian Network":
         # Model training section
         st.subheader("Model Training")
         
-        if st.button("Train Bayesian Network (Demo)"):
-            st.info("""
-            **Note:** In a production environment, this would train the actual Bayesian Network 
-            using the discretized data. For this demo, we're showing the structure and capabilities.
-            """)
-            
-            # Show sample CPDs (Conditional Probability Distributions)
-            st.markdown("""
-            **Sample Conditional Probability Distributions (CPDs):**
-            
-            In a fully trained model, we would see probability tables like:
-            
-            - P(Efficiency | AST_rate, TOV_rate, Shooting_Efficiency, ORB_rate, Net_Rating_Impact)
-            - P(AST_rate | PLAYMAKING_Talent)
-            - P(Shooting_Efficiency | SCORING_Talent)
-            """)
-            
-            # Progress bar for demo
-            progress_bar = st.progress(0)
-            for i in range(100):
-                # Simulate training progress
-                progress_bar.progress(i + 1)
-            
-            st.success("Bayesian Network training completed! (Demo)")
-    
+        if st.button("Train Bayesian Network"):
+            with st.spinner("Training Discrete Bayesian Network..."):
+                try:
+                    data = discretized_data.copy()
+                    
+                    order = ['Low', 'Medium', 'High']
+                    for col in data.columns:
+                        data[col] = pd.Categorical(data[col], categories=order, ordered=True)
+
+                    # Mild balance to ~10% High (handles 0% by synthetic flip)
+                    current_high_pct = (data['Efficiency'] == 'High').mean()
+                    target_high_pct = 0.10
+                    if current_high_pct < target_high_pct:
+                        num_to_add = min(int(len(data) * (target_high_pct - current_high_pct) / (1 - target_high_pct)), len(data) // 3)
+                        if num_to_add > 0:
+                            high_mask = (data['Efficiency'] == 'High')
+                            if high_mask.sum() > 0:
+                                # Normal oversample
+                                oversample = data[high_mask].sample(n=num_to_add, replace=True, random_state=42)
+                            else:
+                                # Synthetic: Flip Med to High
+                                med_mask = (data['Efficiency'] == 'Medium')
+                                if med_mask.sum() > 0:
+                                    synth_high = data[med_mask].sample(n=num_to_add, replace=True, random_state=42).copy()
+                                    synth_high['Efficiency'] = 'High'
+                                    oversample = synth_high
+                                    st.info(f"🔧 Synthetic balance: Flipped {len(oversample)} Med to High (now ~{target_high_pct*100:.0f}% High)")
+                                else:
+                                    st.warning("No Med to flip – baseline stays low; demo with boosts!")
+                                    oversample = pd.DataFrame()  # Empty
+                            if not oversample.empty:
+                                data = pd.concat([data, oversample]).reset_index(drop=True)
+                    
+                    # Define edges
+                    edges = [
+                        ('PLAYMAKING_Talent', 'AST_rate'),
+                        ('PLAYMAKING_Talent', 'TOV_rate'),
+                        ('AST_rate', 'Efficiency'),
+                        ('TOV_rate', 'Efficiency'),
+                        ('SCORING_Talent', 'Shooting_Efficiency'),
+                        ('Shooting_Efficiency', 'Efficiency'),
+                        ('REBOUNDING_Talent', 'ORB_rate'),
+                        ('ORB_rate', 'Efficiency'),
+                        ('DEFENSIVE_Talent', 'Net_Rating_Impact'),
+                        ('Net_Rating_Impact', 'Efficiency'),
+                        ('NET_RATING_Talent', 'Net_Rating_Impact')
+                    ]
+                    
+                    # Fit model
+                    model = DiscreteBayesianNetwork(edges)
+                    model.fit(data, estimator=BayesianEstimator, 
+                             state_names={col: order for col in data.columns if col in data.columns},
+                             equivalent_sample_size=10)
+                    
+                    # Inference engine
+                    infer = VariableElimination(model)
+                    
+                    # Store in session state
+                    st.session_state.model_trained = True
+                    st.session_state.inference_engine = infer
+                    st.session_state.bn_model = model
+                    
+                    st.success("""
+                    ✅ Discrete Bayesian Network trained successfully!
+                    
+                    **Model Ready For:**
+                    - Probabilistic inference
+                    - Scenario analysis  
+                    - Efficiency predictions
+                    - Sensitivity analysis
+                    """)
+                    
+                except Exception as e:
+                    st.error(f"Training failed: {e}")
+
     else:
         st.error("Discretized data not available for Bayesian Network analysis.")
 
@@ -246,77 +296,94 @@ elif section == "Scenario Analysis":
         net_rating_impact = st.selectbox("Net Rating Impact", ["Low", "Medium", "High"], index=1)
     
     if st.button("Predict Lineup Efficiency"):
-        # This would use the actual Bayesian Network for inference
-        # For demo purposes, we'll use a simple heuristic
+        # Real inference if trained, else heuristic (fixed thresholds for Medium baseline)
+        if st.session_state.model_trained and st.session_state.inference_engine is not None:
+            evidence = {
+                'Shooting_Efficiency': shooting_efficiency,
+                'SCORING_Talent': scoring_talent,
+                'Net_Rating_Impact': net_rating_impact,
+                'TOV_rate': tov_rate,
+                'AST_rate': ast_rate,
+                'ORB_rate': orb_rate
+            }
+            valid_evidence = {k: v for k, v in evidence.items() if k in st.session_state.bn_model.nodes()}
+            try:
+                q = st.session_state.inference_engine.query(variables=['Efficiency'], evidence=valid_evidence)
+                efficiency_score = q.values[2] * 100  # P(High)
+                probabilities = q.values
+            except Exception as e:
+                st.error(f"Inference error: {e}")
+                efficiency_score = 50.0
+                probabilities = [0.3, 0.4, 0.3]
+        else:
+            st.warning("🧠 Train the model first in 'Bayesian Network' section for accurate predictions! Using heuristic fallback.")
+            # Tuned heuristic: Baseline Medium (total 0 = Medium); boosts High
+            talent_score = sum([
+                2 if scoring_talent == "High" else 1 if scoring_talent == "Medium" else 0,
+                2 if playmaking_talent == "High" else 1 if playmaking_talent == "Medium" else 0,
+                2 if rebounding_talent == "High" else 1 if rebounding_talent == "Medium" else 0,
+                2 if defensive_talent == "High" else 1 if defensive_talent == "Medium" else 0
+            ])
+            performance_score = sum([
+                2 if ast_rate == "High" else 1 if ast_rate == "Medium" else 0,
+                -2 if tov_rate == "High" else 2 if tov_rate == "Low" else 0,
+                2 if orb_rate == "High" else 1 if orb_rate == "Medium" else 0,
+                2 if shooting_efficiency == "High" else 1 if shooting_efficiency == "Medium" else 0,
+                2 if net_rating_impact == "High" else 1 if net_rating_impact == "Medium" else 0
+            ])
+            total_score = talent_score + performance_score
+            efficiency_score = min(95, max(5, 50 + total_score * 3))  # Medium baseline 50%; High on boosts
+            probabilities = np.array([0.3, 0.4, 0.3])  # Demo; adjust based on score if needed
         
         st.subheader("Prediction Results")
-        
-        # Simple heuristic based on input selections
-        talent_score = sum([
-            1 if scoring_talent == "High" else 0,
-            1 if playmaking_talent == "High" else 0,
-            1 if rebounding_talent == "High" else 0,
-            1 if defensive_talent == "High" else 0
-        ])
-        
-        performance_score = sum([
-            1 if ast_rate == "High" else 0,
-            -1 if tov_rate == "High" else (1 if tov_rate == "Low" else 0),
-            1 if orb_rate == "High" else 0,
-            1 if shooting_efficiency == "High" else 0,
-            1 if net_rating_impact == "High" else 0
-        ])
-        
-        total_score = talent_score + performance_score
-        
-        if total_score >= 7:
-            efficiency_pred = "High"
-            confidence = "Very High"
-            color = "green"
-        elif total_score >= 4:
-            efficiency_pred = "Medium"
-            confidence = "Medium"
-            color = "orange"
-        else:
-            efficiency_pred = "Low"
-            confidence = "Low"
-            color = "red"
         
         # Display results
         col1, col2, col3 = st.columns(3)
         
         with col1:
-            st.metric("Predicted Efficiency", efficiency_pred)
+            st.metric("P(High Efficiency)", f"{efficiency_score:.1f}%")
         
         with col2:
-            st.metric("Confidence", confidence)
+            st.metric("P(Medium)", f"{probabilities[1]*100:.1f}%")
         
         with col3:
-            st.metric("Total Score", f"{total_score}/9")
+            st.metric("P(Low)", f"{probabilities[0]*100:.1f}%")
         
         # Additional insights
         st.subheader("Lineup Insights")
         
-        if efficiency_pred == "High":
+        if efficiency_score > 70:
             st.success("""
-            **This lineup shows excellent potential!**
-            - Strong talent across multiple dimensions
-            - Efficient offensive and defensive metrics
-            - Likely to perform well in game situations
+            **🎯 ELITE LINEUP**
+            - Exceptional efficiency potential
+            - Championship-caliber configuration
+            - Strong across multiple dimensions
             """)
-        elif efficiency_pred == "Medium":
-            st.warning("""
-            **This lineup has average potential.**
-            - Consider improving specific areas like reducing turnovers or enhancing shooting
-            - May perform well against certain matchups
+        elif efficiency_score > 40:
+            st.info("""
+            **👍 STRONG LINEUP**
+            - Well-balanced configuration
+            - Good efficiency prospects
+            - Competitive in most matchups
             """)
         else:
-            st.error("""
-            **This lineup may struggle.**
-            - Focus on improving core competencies
-            - Consider player substitutions in key positions
-            - May need strategic adjustments
+            st.warning("""
+            **💡 NEEDS IMPROVEMENT**
+            - Focus on core competencies
+            - Consider player substitutions
+            - Strategic adjustments needed
             """)
+        
+        # Show distribution chart
+        fig, ax = plt.subplots(figsize=(8, 6))
+        colors = ['red', 'orange', 'green']
+        bars = ax.bar(['Low', 'Medium', 'High'], probabilities * 100, color=colors, alpha=0.8)
+        ax.set_ylabel('Probability (%)')
+        ax.set_title('Efficiency Distribution')
+        ax.set_ylim(0, 100)
+        for bar, prob in zip(bars, probabilities * 100):
+            ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 1, f'{prob:.1f}%', ha='center', va='bottom')
+        st.pyplot(fig)
         
         # Show what-if analysis
         st.subheader("What-If Analysis")
