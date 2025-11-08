@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt  # Fixed: Explicit import for plotting backend
 from pgmpy.models import DiscreteBayesianNetwork
 from pgmpy.estimators import BayesianEstimator
 from pgmpy.inference import VariableElimination
@@ -146,16 +147,29 @@ else:
             with st.container():
                 st.markdown(f'<div class="metric-{lvl.lower()}">📊 {lvl}: {base_probs[i]:.1f}%</div>', unsafe_allow_html=True)
 
-    # Dual Bar Chart: Side-by-Side
+    # Dual Bar Chart: Side-by-Side (Fixed: Use plt for backend)
     col_chart1, col_chart2 = st.columns(2)
     with col_chart1:
         st.markdown("**Your Scenario**")
-        fig1 = probs.plot(kind='bar', color=colors, figsize=(5, 3), title="Efficiency Breakdown").figure
-        st.pyplot(fig1)
+        plt.figure(figsize=(5, 3))
+        probs.plot(kind='bar', color=colors, ax=plt.gca())
+        plt.title("Efficiency Breakdown")
+        plt.ylabel("Probability (%)")
+        plt.xticks(rotation=0)
+        plt.tight_layout()
+        st.pyplot(plt.gcf())
+        plt.close()
+
     with col_chart2:
         st.markdown("**Baseline**")
-        fig2 = base_probs.plot(kind='bar', color=colors, figsize=(5, 3), title="Baseline Breakdown").figure
-        st.pyplot(fig2)
+        plt.figure(figsize=(5, 3))
+        base_probs.plot(kind='bar', color=colors, ax=plt.gca())
+        plt.title("Baseline Breakdown")
+        plt.ylabel("Probability (%)")
+        plt.xticks(rotation=0)
+        plt.tight_layout()
+        st.pyplot(plt.gcf())
+        plt.close()
 
     # Reset Button
     if st.button("🔄 Reset to Baseline", type="secondary"):
