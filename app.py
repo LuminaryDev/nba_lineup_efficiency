@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
 import networkx as nx
 from pgmpy.models import DiscreteBayesianNetwork
 from pgmpy.estimators import BayesianEstimator
@@ -10,9 +9,8 @@ from pgmpy.inference import VariableElimination
 import warnings
 warnings.filterwarnings('ignore')
 
-# Set professional style for matplotlib
-plt.style.use('seaborn-v0_8-whitegrid')
-sns.set_palette("husl")
+# Set professional style for matplotlib without seaborn
+plt.style.use('default')  # Use default style which is clean and professional
 
 # Page configuration
 st.set_page_config(
@@ -544,21 +542,29 @@ elif st.session_state.navigation == "🎮 Lineup Simulator":
             fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
             
             # Bar chart
-            colors = ['#e74c3c', '#f39c12', '#27ae60']
-            bars = ax1.bar(order, q.values * 100, color=colors, alpha=0.8)
-            ax1.set_ylabel('Probability (%)')
-            ax1.set_title('Efficiency Distribution', fontweight='bold')
-            ax1.grid(True, alpha=0.3)
+            colors = ['#e74c3c', '#f39c12', '#27ae60']  # Red, Orange, Green
+            bars = ax1.bar(order, q.values * 100, color=colors, alpha=0.8, edgecolor='black', linewidth=1)
+            ax1.set_ylabel('Probability (%)', fontweight='bold')
+            ax1.set_title('Efficiency Distribution', fontsize=14, fontweight='bold', pad=20)
+            ax1.grid(True, alpha=0.3, linestyle='--')
+            ax1.set_ylim(0, 100)
             
             # Add value labels on bars
             for bar, value in zip(bars, q.values * 100):
                 ax1.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 1,
-                        f'{value:.1f}%', ha='center', va='bottom', fontweight='bold')
+                        f'{value:.1f}%', ha='center', va='bottom', fontweight='bold', fontsize=11)
             
             # Pie chart
-            ax2.pie(q.values * 100, labels=order, autopct='%1.1f%%', startangle=90,
-                   colors=colors, textprops={'fontweight': 'bold'})
-            ax2.set_title('Probability Breakdown', fontweight='bold')
+            wedges, texts, autotexts = ax2.pie(q.values * 100, labels=order, autopct='%1.1f%%', 
+                                              startangle=90, colors=colors, 
+                                              textprops={'fontweight': 'bold'})
+            # Make autopct text larger
+            for autotext in autotexts:
+                autotext.set_color('white')
+                autotext.set_fontweight('bold')
+                autotext.set_fontsize(11)
+            
+            ax2.set_title('Probability Breakdown', fontsize=14, fontweight='bold', pad=20)
             
             plt.tight_layout()
             st.pyplot(fig)
@@ -572,12 +578,195 @@ elif st.session_state.navigation == "🎮 Lineup Simulator":
             else:
                 st.warning("**💡 NEEDS IMPROVEMENT**: Consider adjusting skill balances to optimize lineup efficiency.")
 
-# Other sections follow similar improvements...
-# [Rest of the code for Data Explorer, Sensitivity Analysis, and Insights sections would follow the same pattern]
+# Data Explorer Section
+elif st.session_state.navigation == "📈 Data Explorer":
+    st.markdown('<div class="main-header">📈 NBA Data Explorer</div>', unsafe_allow_html=True)
+    
+    try:
+        data = pd.read_csv("nba_lineups_expanded_discretized.csv")
+        
+        st.markdown('<div class="section-header">📊 Dataset Overview</div>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric("Total Lineups", f"{len(data):,}")
+        with col2:
+            st.metric("Data Columns", len(data.columns))
+        with col3:
+            st.metric("NBA Teams", "30")
+        with col4:
+            st.metric("Season", "2023-24")
+        
+        st.markdown('<div class="subsection-header">🔍 Data Preview</div>', unsafe_allow_html=True)
+        
+        available_columns = data.columns.tolist()
+        selected_columns = st.multiselect(
+            "Select columns to display:",
+            options=available_columns,
+            default=available_columns[:6] if len(available_columns) > 6 else available_columns
+        )
+        
+        if selected_columns:
+            st.dataframe(data[selected_columns].head(20), use_container_width=True)
+        else:
+            st.info("📝 Please select at least one column to display data.")
+            
+        # Data statistics
+        with st.expander("📈 Statistical Summary", expanded=False):
+            if selected_columns:
+                st.dataframe(data[selected_columns].describe(), use_container_width=True)
+            else:
+                st.dataframe(data.describe(), use_container_width=True)
+                
+    except FileNotFoundError:
+        st.error("❌ Dataset not found. Please ensure 'nba_lineups_expanded_discretized.csv' is available.")
+
+# Sensitivity Analysis Section
+elif st.session_state.navigation == "🔍 Sensitivity Analysis":
+    st.markdown('<div class="main-header">🔍 Sensitivity Analysis</div>', unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="insight-card">
+    <h3>Understanding Factor Impact</h3>
+    <p>This analysis reveals which player attributes have the greatest impact on lineup efficiency, helping prioritize skill development and roster construction decisions.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Factor impact data
+    factors = ['Shooting Efficiency', 'Turnover Control', 'Net Rating Impact', 'Assist Rate', 'Rebounding']
+    impacts = [64, 16, 12, 5, 3]
+    
+    st.markdown('<div class="section-header">📊 Factor Impact Ranking</div>', unsafe_allow_html=True)
+    
+    # Create impact DataFrame
+    impact_df = pd.DataFrame({
+        'Factor': factors,
+        'Impact_Score': impacts
+    }).sort_values('Impact_Score', ascending=False)
+    
+    # Display factors with metrics
+    for i, row in impact_df.iterrows():
+        col1, col2, col3 = st.columns([3, 1, 2])
+        with col1:
+            st.write(f"**{i+1}. {row['Factor']}**")
+        with col2:
+            st.metric("Impact", f"+{row['Impact_Score']}%")
+        with col3:
+            st.progress(row['Impact_Score']/100, text=f"Rank #{i+1}")
+    
+    # Professional Impact Visualization
+    st.markdown('<div class="section-header">📈 Impact Visualization</div>', unsafe_allow_html=True)
+    
+    fig, ax = plt.subplots(figsize=(10, 6))
+    
+    # Create horizontal bar chart
+    y_pos = np.arange(len(impact_df))
+    colors = ['#3182ce', '#4299e1', '#63b3ed', '#90cdf4', '#bee3f8']
+    
+    bars = ax.barh(y_pos, impact_df['Impact_Score'], color=colors, alpha=0.8, edgecolor='black', linewidth=1)
+    
+    # Add value labels on bars
+    for i, (bar, value) in enumerate(zip(bars, impact_df['Impact_Score'])):
+        ax.text(bar.get_width() + 1, bar.get_y() + bar.get_height()/2, 
+                f'+{value}%', va='center', ha='left', fontweight='bold', fontsize=11)
+    
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(impact_df['Factor'], fontweight='bold')
+    ax.set_xlabel('Impact on Efficiency (%)', fontweight='bold')
+    ax.set_title('Factor Impact on Lineup Efficiency', fontsize=16, fontweight='bold', pad=20)
+    ax.grid(True, alpha=0.3, axis='x', linestyle='--')
+    ax.set_xlim(0, 70)
+    
+    plt.tight_layout()
+    st.pyplot(fig)
+
+# Insights & Reports Section
+elif st.session_state.navigation == "📋 Insights & Reports":
+    st.markdown('<div class="main-header">📋 Insights & Reports</div>', unsafe_allow_html=True)
+    
+    tab1, tab2, tab3 = st.tabs(["🎯 Key Findings", "💡 Recommendations", "🔮 Future Research"])
+    
+    with tab1:
+        st.markdown("""
+        <div class="insight-card">
+        <h3>🏆 Most Impactful Factors</h3>
+        <ul>
+        <li><strong>Shooting Dominance</strong>: +64% boost to high efficiency – prioritize 3PT threats!</li>
+        <li><strong>Turnover Control</strong>: Next biggest lever (+16%) - ball security is crucial</li>
+        <li><strong>Net Rating Impact</strong>: Defensive efficiency contributes +12% to overall efficiency</li>
+        </ul>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Key metrics in a row
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Shooting Impact", "+64%", "Primary Driver")
+        with col2:
+            st.metric("Turnover Impact", "+16%", "Secondary Driver")
+        with col3:
+            st.metric("Defense Impact", "+12%", "Important Factor")
+            
+        st.markdown("""
+        <div class="feature-card">
+        <h4>📈 Additional Insights</h4>
+        <ul>
+        <li>Elite shooting can compensate for average defense in offensive schemes</li>
+        <li>Turnover reduction has disproportionate positive impact on overall efficiency</li>  
+        <li>Balanced lineups consistently outperform specialized lineups over full seasons</li>
+        <li>The marginal gain from improving already-high skills diminishes rapidly</li>
+        </ul>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with tab2:
+        st.markdown("""
+        <div class="insight-card">
+        <h3>💡 Strategic Recommendations</h3>
+        
+        <p><strong>🎯 Roster Construction:</strong></p>
+        <ul>
+        <li>Prioritize elite shooters in free agency and drafts</li>
+        <li>Value low-turnover playmakers over high-risk creators</li>
+        <li>Seek two-way players who impact both offense and defense</li>
+        </ul>
+        
+        <p><strong>🔄 Game Strategy:</strong></p>
+        <ul>
+        <li>Maximize 3-point attempts from efficient shooters</li>
+        <li>Implement systematic turnover-reduction schemes</li>
+        <li>Use data-driven substitution patterns</li>
+        <li>Focus on defensive schemes that protect high-efficiency shooters</li>
+        </ul>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with tab3:
+        st.markdown("""
+        <div class="insight-card">
+        <h3>🔮 Research Roadmap</h3>
+        
+        <p><strong>⚡ Next Phase Enhancements:</strong></p>
+        <ul>
+        <li>Real-time opponent-adjusted metrics</li>
+        <li>Player chemistry and fit analysis</li>
+        <li>Fatigue and back-to-back factors</li>
+        <li>Possession-level granular analysis</li>
+        </ul>
+        
+        <p><strong>🎯 Long-term Vision:</strong></p>
+        <ul>
+        <li>Predictive lineup optimization</li>
+        <li>Dynamic in-game adjustments</li>
+        <li>AI-powered talent evaluation</li>
+        <li>Integration with player tracking data</li>
+        </ul>
+        </div>
+        """, unsafe_allow_html=True)
 
 st.markdown('</div>', unsafe_allow_html=True)  # Close main container
 
-# Footer
+# Professional Footer
 st.markdown("---")
 st.markdown("""
 <div style='text-align: center; color: #718096; padding: 2rem;'>
