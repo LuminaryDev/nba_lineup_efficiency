@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from pgmpy.models import DiscreteBayesianNetwork  # Fixed: Use DiscreteBayesianNetwork
+from pgmpy.models import DiscreteBayesianNetwork
 from pgmpy.estimators import BayesianEstimator
 from pgmpy.inference import VariableElimination
 import warnings
@@ -12,7 +12,6 @@ st.markdown("**Interactive Demo**: Tweak player skills & see efficiency impact. 
 
 @st.cache_data
 def load_data():
-    # Try loading your processed CSV (upload via Streamlit if needed)
     try:
         data = pd.read_csv("nba_lineups_expanded_discretized.csv")
         st.success(f"✅ Loaded {len(data)} lineups!")
@@ -33,7 +32,8 @@ def fit_model(data):
         'AST_rate', 'TOV_rate', 'ORB_rate'
     ]
     for col in all_cols:
-        data[col] = pd.Categorical(data[col], categories=order, ordered=True)
+        if col in data.columns:
+            data[col] = pd.Categorical(data[col], categories=order, ordered=True)
 
     edges = [
         ('PLAYMAKING_Talent', 'AST_rate'),
@@ -49,19 +49,18 @@ def fit_model(data):
         ('ORB_rate', 'Efficiency')
     ]
 
-    model = DiscreteBayesianNetwork(edges)  # Fixed: Use DiscreteBayesianNetwork
+    model = DiscreteBayesianNetwork(edges)
     model.fit(data, estimator=BayesianEstimator,
-              state_names={col: order for col in all_cols},
+              state_names={col: order for col in all_cols if col in data.columns},
               equivalent_sample_size=10)
     return model, data
 
 # Load & Fit
 data = load_data()
-model, data = fit_model(data)
+model, fitted_data = fit_model(data)  # Use fitted_data for consistency
 
 if model is None:
     st.error("❌ Model not ready. Upload data or add data-gen code.")
-    # Optional: Add your Phase 1 data-gen here if no CSV (nba_api works in cloud)
     if st.button("Generate Sample Data (Slow - NBA API)"):
         st.code("# Paste your Phase 1 code here")
 else:
@@ -123,12 +122,24 @@ else:
             delta = q_s.values[2] - base_high
             sens_data.append({'Factor': label, 'Δ P(High)': f"{delta:+.1%}"})
 
-        df_sens = pd.DataFrame(sens_data).sort_values('Δ P(High)', key=lambda x: x.str.rstrip('%').astype('float'), ascending=False)
+        df_sens = pd.DataFrame(sens_data).sort_values('Δ P(High)', key=lambda x: float(x.str.rstrip('%').str.replace('+', '')), ascending=False)
         st.table(df_sens)
 
     with tab2:
         st.markdown("**Phase 1-2: Real NBA Lineup Sample**")
-        st.dataframe(data[['GROUP_NAME', 'team', 'MIN', 'PLUS_MINUS', 'FG_PCT', 'FG3_PCT', 'Efficiency']].head(10))
+        
+        # Robust column selection: Prioritize display cols, fallback to modeled ones
+        display_cols = ['GROUP_NAME', 'team', 'MIN', 'PLUS_MINUS', 'FG_PCT', 'FG3_PCT', 'Efficiency']
+        available_cols = [col for col in display_cols if col in fitted_data.columns]
+        if not available_cols:
+            available_cols = ['Shooting_Efficiency', 'Net_Rating_Impact', 'Efficiency', 'AST_rate', 'TOV_rate', 'ORB_rate']  # Fallback
+            st.info("📊 Showing modeled columns (raw data may vary).")
+        
+        # Debug: Show columns if needed
+        with st.expander("🔍 Debug: Available Columns"):
+            st.write(list(fitted_data.columns))
+        
+        st.dataframe(fitted_data[available_cols].head(10))
 
     with tab3:
         st.markdown("""
