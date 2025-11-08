@@ -1,42 +1,41 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt  # Fixed: Explicit import for plotting backend
+import matplotlib.pyplot as plt
 from pgmpy.models import DiscreteBayesianNetwork
 from pgmpy.estimators import BayesianEstimator
 from pgmpy.inference import VariableElimination
 import warnings
 warnings.filterwarnings('ignore')
 
-# Page config for wide, immersive layout
+# Page config for wide, clean layout
 st.set_page_config(layout="wide", page_title="NBA Lineup Optimizer", page_icon="🏀")
 
-# Custom CSS for NBA flair: Orange accents, clean shadows
+# Custom CSS: Light, calm professional theme (soft grays, clean lines)
 st.markdown("""
 <style>
-    .main-header {color: #FDB927; font-size: 2.5em; text-align: center; font-weight: bold;}
-    .metric-high {background-color: #28a745; color: white; border-radius: 5px; padding: 10px;}
-    .metric-low {background-color: #dc3545; color: white; border-radius: 5px; padding: 10px;}
-    .metric-med {background-color: #ffc107; color: black; border-radius: 5px; padding: 10px;}
-    .sidebar .sidebar-content {background-color: #1e1e1e;}
-    .stMetric > div > div > div {font-size: 1.2em;}
+    .main-header {color: #2c3e50; font-size: 2.2em; text-align: center; font-weight: 300; margin-bottom: 0.5em;}
+    .subtle-metric {background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 12px; margin: 4px 0;}
+    .sidebar .sidebar-content {background-color: #ffffff; border-right: 1px solid #e9ecef;}
+    .stMetric > label {font-size: 0.9em; color: #6c757d;}
+    .stMetric > div > div > div {font-size: 1.4em; font-weight: 400;}
+    section[data-testid="stHorizontalBlock"] {gap: 1rem;}
 </style>
 """, unsafe_allow_html=True)
 
-# Hero Header: Immersive & Exclusive
-st.markdown('<h1 class="main-header">🏀 NBA Lineup Optimizer</h1>', unsafe_allow_html=True)
-st.markdown("**Unlock Elite Efficiency**: Bayesian-powered " + 
-            "insights from 2023-24 data. Tweak talents, simulate subs, dominate the court. " + 
-            "<i>Exclusive build by Rediet Girmay (GSE/0945-17)</i>", unsafe_allow_html=True)
+# Hero Header: Minimal & Professional
+st.markdown('<h1 class="main-header">NBA Lineup Optimizer</h1>', unsafe_allow_html=True)
+st.markdown("Bayesian insights from 2023-24 data. Simulate substitutions, measure efficiency. " +
+            "<i>By Rediet Girmay | GSE/0945-17</i>", unsafe_allow_html=True)
 
 @st.cache_data
 def load_data():
     try:
         data = pd.read_csv("nba_lineups_expanded_discretized.csv")
-        st.success(f"✅ Loaded {len(data):,} lineups – Ready to optimize!")
+        st.success(f"Loaded {len(data):,} lineups.")
         return data
     except FileNotFoundError:
-        st.warning("📁 Upload 'nba_lineups_expanded_discretized.csv'.")
+        st.warning("Upload 'nba_lineups_expanded_discretized.csv'.")
         return None
 
 @st.cache_data
@@ -54,7 +53,7 @@ def fit_model(data):
         if col in data.columns:
             data[col] = pd.Categorical(data[col], categories=order, ordered=True)
 
-    # Balance for realistic baselines (~5-8% High)
+    # Balance for realistic baselines
     high_mask = data['Efficiency'] == 'High'
     if sum(high_mask) < len(data) * 0.2:
         frac = (0.2 / (sum(high_mask)/len(data))) - 1
@@ -80,80 +79,77 @@ data = load_data()
 model, fitted_data = fit_model(data)
 
 if model is None:
-    st.error("❌ Load data to launch.")
+    st.error("Load data to proceed.")
 else:
     infer = VariableElimination(model)
     order = ['Low', 'Medium', 'High']
-    colors = ['#dc3545', '#ffc107', '#28a745']  # Red-Yellow-Green
+    neutral_colors = ['#adb5bd', '#6c757d', '#495057']  # Calm grays
 
-    # Sidebar: Sleek Controls
+    # Sidebar: Streamlined & Light
     with st.sidebar:
-        st.header("🎯 Strategy Selector")
+        st.header("Scenario Selector")
         scenario = st.selectbox(
-            "Choose Your Play:", 
-            ["Baseline Squad", "Splash Brother (Elite Shooter)", "Lockdown D (Defensive Anchor)", 
-             "Steady PG (Low TOV)", "Dynamic Duo (Shooter + Playmaker)", 
-             "Board Battle (High TOV Risk)", "Unstoppable Force (All-In)"],
+            "Select Preset:",
+            ["Baseline", "Elite Shooter", "Defensive Focus", 
+             "Low Turnover", "Shooter + Low TO", 
+             "High Turnover Risk", "Full Elite"],
             index=0
         )
-        manual_mode = st.checkbox("⚙️ Custom Lineup Mode", value=False)
+        manual_mode = st.checkbox("Custom Adjustments", value=False)
 
-        # Auto-set based on scenario
+        # Presets
         presets = {
-            "Baseline Squad": ('Medium', 'Medium', 'Medium'),
-            "Splash Brother (Elite Shooter)": ('High', 'Medium', 'Medium'),
-            "Lockdown D (Defensive Anchor)": ('Medium', 'High', 'Medium'),
-            "Steady PG (Low TOV)": ('Medium', 'Medium', 'Low'),
-            "Dynamic Duo (Shooter + Playmaker)": ('High', 'Medium', 'Low'),
-            "Board Battle (High TOV Risk)": ('Medium', 'Medium', 'High'),
-            "Unstoppable Force (All-In)": ('High', 'High', 'Low')
+            "Baseline": ('Medium', 'Medium', 'Medium'),
+            "Elite Shooter": ('High', 'Medium', 'Medium'),
+            "Defensive Focus": ('Medium', 'High', 'Medium'),
+            "Low Turnover": ('Medium', 'Medium', 'Low'),
+            "Shooter + Low TO": ('High', 'Medium', 'Low'),
+            "High Turnover Risk": ('Medium', 'Medium', 'High'),
+            "Full Elite": ('High', 'High', 'Low')
         }
         shooting, net_rating, tov = presets[scenario]
 
         if manual_mode:
-            st.subheader("Fine-Tune")
-            shooting = st.selectbox("Shooting 🔥", order, index=order.index(shooting))
-            net_rating = st.selectbox("Net Rating 🛡️", order, index=order.index(net_rating))
-            tov = st.selectbox("Turnovers ⚠️", order, index=order.index(tov))
-            scenario = "Your Custom Build"
+            shooting = st.selectbox("Shooting Efficiency", order, index=order.index(shooting))
+            net_rating = st.selectbox("Net Rating Impact", order, index=order.index(net_rating))
+            tov = st.selectbox("Turnover Rate", order, index=order.index(tov))
+            scenario = "Custom"
 
-    # Baseline Calc
+    # Baseline
     baseline_ev = {'Shooting_Efficiency': 'Medium', 'Net_Rating_Impact': 'Medium', 'TOV_rate': 'Medium'}
     base_q = infer.query(variables=['Efficiency'], evidence=baseline_ev)
     base_high = base_q.values[2]
+    base_probs = pd.Series(base_q.values, index=order) * 100
 
-    # Query
+    # Current Query
     evidence = {'Shooting_Efficiency': shooting, 'Net_Rating_Impact': net_rating, 'TOV_rate': tov}
     q = infer.query(variables=['Efficiency'], evidence=evidence)
     probs = pd.Series(q.values, index=order) * 100
 
-    # Main: Immersive Split-View Comparison
-    col_left, col_right = st.columns([1, 1])
+    # Main: Clean Split-View
+    col_left, col_right = st.columns(2)
     with col_left:
-        st.subheader("Current Scenario")
+        st.subheader("Scenario Analysis")
         delta_high = (q.values[2] - base_high) * 100
-        st.metric("Efficiency Boost", f"{delta_high:+.1f}%", 
-                  delta=f"vs. Baseline ({base_high*100:.1f}%)", delta_color="normal")
+        st.metric("P(High Efficiency) Change", f"{delta_high:+.1f}%")
 
-        # Color-coded Metrics
-        for i, lvl in enumerate(order):
-            with st.container():
-                st.markdown(f'<div class="metric-{lvl.lower()}">🏆 {lvl}: {probs[i]:.1f}%</div>', unsafe_allow_html=True)
+        # Clean Metrics (Neutral, Spaced)
+        for lvl in order:
+            idx = order.index(lvl)
+            st.metric(lvl, f"{probs[idx]:.1f}%", delta_color="off")
 
     with col_right:
-        st.subheader("Baseline Comparison")
-        base_probs = pd.Series(base_q.values, index=order) * 100
-        for i, lvl in enumerate(order):
-            with st.container():
-                st.markdown(f'<div class="metric-{lvl.lower()}">📊 {lvl}: {base_probs[i]:.1f}%</div>', unsafe_allow_html=True)
+        st.subheader("Baseline")
+        for lvl in order:
+            idx = order.index(lvl)
+            st.metric(lvl, f"{base_probs[idx]:.1f}%", delta_color="off")
 
-    # Dual Bar Chart: Side-by-Side (Fixed: Use plt for backend)
+    # Subtle Charts
     col_chart1, col_chart2 = st.columns(2)
     with col_chart1:
-        st.markdown("**Your Scenario**")
-        plt.figure(figsize=(5, 3))
-        probs.plot(kind='bar', color=colors, ax=plt.gca())
-        plt.title("Efficiency Breakdown")
+        plt.figure(figsize=(6, 4))
+        probs.plot(kind='bar', color=neutral_colors, ax=plt.gca(), width=0.6)
+        plt.title("")
         plt.ylabel("Probability (%)")
         plt.xticks(rotation=0)
         plt.tight_layout()
@@ -161,43 +157,43 @@ else:
         plt.close()
 
     with col_chart2:
-        st.markdown("**Baseline**")
-        plt.figure(figsize=(5, 3))
-        base_probs.plot(kind='bar', color=colors, ax=plt.gca())
-        plt.title("Baseline Breakdown")
+        plt.figure(figsize=(6, 4))
+        base_probs.plot(kind='bar', color=neutral_colors, ax=plt.gca(), width=0.6)
+        plt.title("")
         plt.ylabel("Probability (%)")
         plt.xticks(rotation=0)
         plt.tight_layout()
         st.pyplot(plt.gcf())
         plt.close()
 
-    # Reset Button
-    if st.button("🔄 Reset to Baseline", type="secondary"):
-        st.rerun()
+    # Reset
+    st.button("Reset to Baseline", type="secondary", help="Revert to default.")
 
-    # Tabs: Polished & Concise
-    tab1, tab2, tab3 = st.tabs(["📊 Insights", "🔍 Data Dive", "🏆 Pro Tips"])
+    # Tabs: Minimalist
+    tab1, tab2, tab3 = st.tabs(["Factor Impact", "Data Overview", "Insights"])
 
     with tab1:
-        st.markdown("**Sensitivity Heatmap: Factor Impact**")
+        st.markdown("**Sensitivity Analysis**")
         treatments = [
-            ('Shooting_Efficiency', 'High', "Shooting 🔥"), ('TOV_rate', 'Low', "TOV Control ⚠️"),
-            ('Net_Rating_Impact', 'High', "Defense 🛡️"), ('ORB_rate', 'High', "Rebounds 🏀"),
-            ('AST_rate', 'High', "Assists ➡️")
+            ('Shooting_Efficiency', 'High', "Shooting Efficiency"),
+            ('TOV_rate', 'Low', "Turnover Rate"),
+            ('Net_Rating_Impact', 'High', "Net Rating Impact"),
+            ('ORB_rate', 'High', "Rebound Rate"),
+            ('AST_rate', 'High', "Assist Rate")
         ]
         sens_data = []
-        for var, val, icon in treatments:
+        for var, val, label in treatments:
             ev = {**baseline_ev, var: val}
             q_s = infer.query(variables=['Efficiency'], evidence=ev)
             delta = (q_s.values[2] - base_high) * 100
-            sens_data.append({'Factor': f"{icon} {var.replace('_', ' ').title()}", 'Δ High': f"{delta:+.1f}%"})
+            sens_data.append({'Factor': label, 'Delta_Num': delta, 'Change': f"{delta:+.1f}%"})
 
-        df_sens = pd.DataFrame(sens_data).sort_values('Δ High', key=lambda x: float(x.str.extract('([+-]?\d+\.?\d*)').astype(float)), ascending=False)
+        df_sens = pd.DataFrame(sens_data).sort_values('Delta_Num', ascending=False)[['Factor', 'Change']]
         st.dataframe(df_sens, use_container_width=True, hide_index=True)
 
     with tab2:
-        st.markdown("**Elite Lineup Samples**")
-        display_cols = ['GROUP_NAME', 'team', 'MIN', 'PLUS_MINUS', 'Efficiency']  # Trimmed for clean view
+        st.markdown("**Sample Lineups**")
+        display_cols = ['GROUP_NAME', 'team', 'MIN', 'PLUS_MINUS', 'Efficiency']
         available_cols = [col for col in display_cols if col in fitted_data.columns]
         if not available_cols:
             available_cols = ['Efficiency', 'Shooting_Efficiency', 'Net_Rating_Impact']
@@ -205,15 +201,14 @@ else:
 
     with tab3:
         st.markdown("""
-        ### 🎯 Pro Tips for Coaches & Analysts
-        - **Stack Winners**: High Shooting + Low TOV = 99% elite – like Warriors 2016.
-        - **Avoid Traps**: High TOV tanks everything; rebounding's a sidekick, not star.
-        - **Quote of the Game**: "Efficiency isn't luck—it's lineup science." – Rediet Girmay
-        - **Next Level**: Integrate live player stats for real-time subs.
+        **Key Takeaways**
+        - Prioritize shooting efficiency for maximum impact.
+        - Minimize turnovers to sustain performance.
+        - Defensive rating supports but does not drive alone.
         
-        _Exclusive Edition | Built for Champions | Nov 2025_
+        _Professional Edition | November 2025_
         """)
 
-# Footer: Subtle & Pro
+# Footer: Understated
 st.markdown("---")
-st.markdown('<p style="text-align: center; color: #FDB927;">Powered by xAI & NBA Analytics | Optimize. Dominate. Repeat.</p>', unsafe_allow_html=True)
+st.markdown('<p style="text-align: center; color: #6c757d; font-size: 0.9em;">NBA Analytics | Optimize Strategically</p>', unsafe_allow_html=True)
