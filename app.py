@@ -15,121 +15,116 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Professional Color Scheme - NBA Inspired
+# Custom CSS for modern styling - FIXED VERSION
 st.markdown("""
 <style>
-    /* Professional NBA-inspired color scheme */
-    :root {
-        --primary-blue: #1D428A;
-        --primary-red: #C8102E;
-        --secondary-blue: #007AC1;
-        --dark-bg: #2C3E50;
-        --light-bg: #F8F9FA;
-        --accent-gold: #FFD700;
-        --text-dark: #2C3E50;
-        --text-light: #6C757D;
-        --success: #28A745;
-        --warning: #FFC107;
-        --danger: #DC3545;
-    }
-    
+    /* Main styling */
     .main-header {
         font-size: 2.8rem;
-        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         font-weight: 800;
         margin-bottom: 1rem;
         text-align: center;
-        padding: 1rem 0;
     }
     
     .section-header {
         font-size: 1.8rem;
-        color: var(--primary-blue);
+        color: #2c3e50;
         font-weight: 700;
         margin: 2rem 0 1rem 0;
         padding-bottom: 0.5rem;
-        border-bottom: 3px solid var(--primary-red);
+        border-bottom: 3px solid #3498db;
     }
     
     .subsection-header {
         font-size: 1.3rem;
-        color: var(--secondary-blue);
+        color: #34495e;
         font-weight: 600;
         margin: 1.5rem 0 1rem 0;
     }
     
-    /* Professional Card Styling */
+    /* Card styling - FIXED FOR VISIBILITY */
+    .metric-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 15px;
+        border-left: 5px solid #3498db;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin: 0.5rem 0;
+        transition: transform 0.2s ease;
+        color: #2c3e50 !important;
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+    
     .feature-card {
         background: white;
         padding: 1.5rem;
         border-radius: 12px;
-        border: 1px solid #E0E0E0;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e0e0e0;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         margin: 0.5rem 0;
-        transition: all 0.3s ease;
-        border-top: 4px solid var(--primary-blue);
+        color: #2c3e50 !important;
     }
     
-    .feature-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+    .feature-card h3, .feature-card h4 {
+        color: #2c3e50 !important;
+        margin-top: 0;
+    }
+    
+    .feature-card p, .feature-card li {
+        color: #2c3e50 !important;
+        opacity: 0.9;
     }
     
     .insight-card {
-        background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%);
+        background: #fff9e6;
         padding: 1.5rem;
         border-radius: 12px;
-        border-left: 5px solid var(--warning);
+        border-left: 5px solid #ffc107;
         margin: 1rem 0;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        color: #2c3e50 !important;
     }
     
-    .metric-card {
-        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-        padding: 1.5rem;
-        border-radius: 15px;
-        border: 1px solid #E0E0E0;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        margin: 0.5rem 0;
+    .insight-card h3, .insight-card h4 {
+        color: #2c3e50 !important;
+        margin-top: 0;
     }
     
-    /* Professional Button Styling */
+    .insight-card ul, .insight-card li {
+        color: #2c3e50 !important;
+    }
+    
+    /* Button styling */
     .stButton button {
-        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         border: none;
-        padding: 0.75rem 1.5rem;
+        padding: 0.5rem 1.5rem;
         border-radius: 8px;
         font-weight: 600;
         transition: all 0.3s ease;
-        width: 100%;
     }
     
     .stButton button:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 12px rgba(29, 66, 138, 0.3);
-        background: linear-gradient(135deg, var(--secondary-blue) 0%, var(--primary-blue) 100%);
+        box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+        color: white !important;
     }
     
-    .preset-button {
-        background: linear-gradient(135deg, var(--primary-red) 0%, #e74c3c 100%) !important;
-    }
-    
-    .preset-button:hover {
-        background: linear-gradient(135deg, #e74c3c 0%, var(--primary-red) 100%) !important;
-    }
-    
-    /* Sidebar Styling */
+    /* Sidebar styling */
     .sidebar .sidebar-content {
-        background: linear-gradient(180deg, var(--dark-bg) 0%, var(--primary-blue) 100%);
+        background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
     }
     
     .sidebar .sidebar-content .stRadio label {
         color: white !important;
         font-weight: 600;
-        padding: 0.5rem;
     }
     
     .sidebar-title {
@@ -138,94 +133,60 @@ st.markdown("""
         font-weight: 700;
         text-align: center;
         margin-bottom: 2rem;
-        padding: 1rem;
-    }
-    
-    /* Tab Styling */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 1rem;
-        background-color: var(--light-bg);
-        padding: 0.5rem;
-        border-radius: 10px;
-    }
-    
-    .stTabs [data-baseweb="tab"] {
-        height: 50px;
-        background-color: white;
-        border-radius: 8px;
-        padding: 0px 20px;
-        border: 1px solid #E0E0E0;
-        font-weight: 600;
-    }
-    
-    .stTabs [aria-selected="true"] {
-        background-color: var(--primary-blue) !important;
-        color: white !important;
     }
     
     /* Progress bars */
     .stProgress > div > div > div {
-        background: linear-gradient(90deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    /* Tab styling */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 2rem;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        height: 50px;
+        white-space: pre-wrap;
+        background-color: #f8f9fa;
+        border-radius: 8px 8px 0px 0px;
+        gap: 1rem;
+        padding: 0px 20px;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background-color: #3498db !important;
+        color: white !important;
     }
     
     /* Custom metric styling */
     [data-testid="metric-container"] {
         background: white;
-        border: 1px solid #E0E0E0;
+        border: 1px solid #e0e0e0;
         border-radius: 12px;
-        padding: 1.5rem;
+        padding: 1rem;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        border-top: 4px solid var(--primary-blue);
     }
     
-    /* Success/Info/Warning boxes */
-    .stSuccess {
-        border-radius: 10px;
-        border-left: 5px solid var(--success);
-        background-color: #d4edda;
+    /* Ensure text visibility everywhere */
+    .stMarkdown, .stMarkdown p, .stMarkdown li {
+        color: #2c3e50 !important;
     }
     
-    .stInfo {
-        border-radius: 10px;
-        border-left: 5px solid var(--secondary-blue);
-        background-color: #d1ecf1;
-    }
-    
-    .stWarning {
-        border-radius: 10px;
-        border-left: 5px solid var(--warning);
-        background-color: #fff3cd;
-    }
-    
-    /* Expander styling */
+    /* Fix expander content */
     .streamlit-expanderHeader {
-        background-color: var(--light-bg);
-        color: var(--text-dark) !important;
-        font-weight: 600;
-        border-radius: 8px !important;
+        background-color: #f8f9fa;
+        color: #2c3e50 !important;
     }
     
     .streamlit-expanderContent {
         background-color: white;
-        border-radius: 0 0 8px 8px;
-    }
-    
-    /* Ensure text visibility */
-    .stMarkdown, .stMarkdown p, .stMarkdown li {
-        color: var(--text-dark) !important;
-    }
-    
-    .feature-card h3, .feature-card h4, .feature-card p, .feature-card li {
-        color: var(--text-dark) !important;
-    }
-    
-    .insight-card h3, .insight-card h4, .insight-card p, .insight-card li {
-        color: var(--text-dark) !important;
+        color: #2c3e50 !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize session state
+# Initialize session state for navigation and simulator values
 if 'navigation' not in st.session_state:
     st.session_state.navigation = "📊 Dashboard Overview"
 
@@ -295,7 +256,7 @@ if app_section != st.session_state.navigation:
 
 # Main content based on navigation selection
 if st.session_state.navigation == "📊 Dashboard Overview":
-    # Header Section
+    # Header Section with gradient
     col1, col2, col3 = st.columns([2, 1, 1])
     with col1:
         st.markdown('<div class="main-header">🏀 NBA Lineup Efficiency Analyzer</div>', unsafe_allow_html=True)
@@ -310,7 +271,7 @@ if st.session_state.navigation == "📊 Dashboard Overview":
     with col3:
         st.metric("🎯 Accuracy", "89%", "±3%")
     
-    # Feature Cards
+    # Feature Cards - FIXED VISIBILITY
     st.markdown('<div class="section-header">🚀 Key Features</div>', unsafe_allow_html=True)
     
     feature_col1, feature_col2, feature_col3 = st.columns(3)
@@ -318,28 +279,28 @@ if st.session_state.navigation == "📊 Dashboard Overview":
     with feature_col1:
         st.markdown("""
         <div class="feature-card">
-            <h3>🎮 Interactive Simulator</h3>
-            <p>Test different player combinations and see real-time efficiency predictions using our Bayesian Network model.</p>
+            <h3 style='color: #2c3e50;'>🎮 Interactive Simulator</h3>
+            <p style='color: #2c3e50;'>Test different player combinations and see real-time efficiency predictions using our Bayesian Network model.</p>
         </div>
         """, unsafe_allow_html=True)
     
     with feature_col2:
         st.markdown("""
         <div class="feature-card">
-            <h3>📈 Advanced Analytics</h3>
-            <p>Deep dive into sensitivity analysis and understand which factors most impact lineup performance.</p>
+            <h3 style='color: #2c3e50;'>📈 Advanced Analytics</h3>
+            <p style='color: #2c3e50;'>Deep dive into sensitivity analysis and understand which factors most impact lineup performance.</p>
         </div>
         """, unsafe_allow_html=True)
     
     with feature_col3:
         st.markdown("""
         <div class="feature-card">
-            <h3>🏆 Data-Driven Insights</h3>
-            <p>Leverage real 2023-24 NBA data to make informed decisions about lineup construction and strategy.</p>
+            <h3 style='color: #2c3e50;'>🏆 Data-Driven Insights</h3>
+            <p style='color: #2c3e50;'>Leverage real 2023-24 NBA data to make informed decisions about lineup construction and strategy.</p>
         </div>
         """, unsafe_allow_html=True)
     
-    # Quick Start Section
+    # Quick Start Section - FIXED BUTTONS
     st.markdown('<div class="section-header">⚡ Quick Start</div>', unsafe_allow_html=True)
     
     quick_col1, quick_col2, quick_col3 = st.columns(3)
@@ -426,93 +387,19 @@ elif st.session_state.navigation == "🎮 Lineup Simulator":
         control_col, result_col = st.columns([2, 1])
         
         with control_col:
-            # Current Configuration Display
-            st.markdown("### 🎯 Current Configuration")
-            config_cols = st.columns(3)
-            with config_cols[0]:
-                st.metric("Shooting", st.session_state.simulator_values['shooting'])
-            with config_cols[1]:
-                st.metric("Defense", st.session_state.simulator_values['net_rating'])
-            with config_cols[2]:
-                st.metric("Playmaking", st.session_state.simulator_values['ast_rate'])
-            
-            # Quick Presets with clear purpose
-            st.markdown('<div class="subsection-header">🚀 Quick Lineup Presets</div>', unsafe_allow_html=True)
-            st.markdown("**Click any preset to instantly configure optimal lineup archetypes:**")
-            
-            preset_col1, preset_col2, preset_col3, preset_col4 = st.columns(4)
-            
-            with preset_col1:
-                if st.button("🏹\nElite Shooting", use_container_width=True, key="elite_shooting_btn"):
-                    st.session_state.simulator_values.update({
-                        'shooting': 'High',
-                        'scoring': 'High',
-                        'ast_rate': 'Medium',
-                        'tov': 'Medium',
-                        'net_rating': 'Medium',
-                        'orb_rate': 'Medium'
-                    })
-                    st.success("✅ Elite Shooting lineup configured!")
-                    st.rerun()
-                st.caption("Max shooting & scoring")
-            
-            with preset_col2:
-                if st.button("🛡️\nLockdown Defense", use_container_width=True, key="defense_btn"):
-                    st.session_state.simulator_values.update({
-                        'shooting': 'Medium',
-                        'scoring': 'Medium',
-                        'ast_rate': 'Medium',
-                        'tov': 'Low',
-                        'net_rating': 'High',
-                        'orb_rate': 'High'
-                    })
-                    st.success("✅ Lockdown Defense lineup configured!")
-                    st.rerun()
-                st.caption("Max defense & low TOs")
-            
-            with preset_col3:
-                if st.button("🔄\nPlaymaker", use_container_width=True, key="playmaker_btn"):
-                    st.session_state.simulator_values.update({
-                        'shooting': 'Medium',
-                        'scoring': 'Medium',
-                        'ast_rate': 'High',
-                        'tov': 'Low',
-                        'net_rating': 'Medium',
-                        'orb_rate': 'Medium'
-                    })
-                    st.success("✅ Playmaker lineup configured!")
-                    st.rerun()
-                st.caption("High assists, low turnovers")
-            
-            with preset_col4:
-                if st.button("⚖️\nBalanced", use_container_width=True, key="balanced_btn"):
-                    st.session_state.simulator_values.update({
-                        'shooting': 'Medium',
-                        'scoring': 'Medium',
-                        'ast_rate': 'Medium',
-                        'tov': 'Medium',
-                        'net_rating': 'Medium',
-                        'orb_rate': 'Medium'
-                    })
-                    st.success("✅ Balanced lineup configured!")
-                    st.rerun()
-                st.caption("All-around balanced")
-            
-            st.markdown("---")
-            
-            # Manual Configuration
-            st.markdown('<div class="subsection-header">⚙️ Manual Configuration</div>', unsafe_allow_html=True)
-            
+            # Skill Configuration in expandable sections
             with st.expander("🎯 Shooting & Scoring", expanded=True):
                 shooting_col, scoring_col = st.columns(2)
                 with shooting_col:
                     shooting = st.selectbox("Shooting Efficiency", order, 
                                           index=order.index(st.session_state.simulator_values['shooting']), 
                                           key="shooting_select")
+                    st.caption("3PT & FG Efficiency")
                 with scoring_col:
                     scoring = st.selectbox("Scoring Talent", order, 
                                          index=order.index(st.session_state.simulator_values['scoring']),
                                          key="scoring_select")
+                    st.caption("Overall scoring ability")
             
             with st.expander("🔄 Playmaking & Ball Control", expanded=True):
                 play_col1, play_col2 = st.columns(2)
@@ -520,10 +407,12 @@ elif st.session_state.navigation == "🎮 Lineup Simulator":
                     ast_rate = st.selectbox("Assist Rate", order, 
                                           index=order.index(st.session_state.simulator_values['ast_rate']),
                                           key="ast_select")
+                    st.caption("Playmaking ability")
                 with play_col2:
                     tov = st.selectbox("Turnover Rate", order, 
                                      index=order.index(st.session_state.simulator_values['tov']),
                                      key="tov_select")
+                    st.caption("Ball security")
             
             with st.expander("🛡️ Defense & Rebounding"):
                 def_col1, def_col2 = st.columns(2)
@@ -531,10 +420,12 @@ elif st.session_state.navigation == "🎮 Lineup Simulator":
                     net_rating = st.selectbox("Net Rating Impact", order, 
                                             index=order.index(st.session_state.simulator_values['net_rating']),
                                             key="net_rating_select")
+                    st.caption("Overall impact")
                 with def_col2:
                     orb_rate = st.selectbox("Offensive Rebound Rate", order, 
                                           index=order.index(st.session_state.simulator_values['orb_rate']),
                                           key="orb_select")
+                    st.caption("Second chance opportunities")
             
             # Update session state with current selections
             st.session_state.simulator_values.update({
@@ -545,6 +436,48 @@ elif st.session_state.navigation == "🎮 Lineup Simulator":
                 'net_rating': net_rating,
                 'orb_rate': orb_rate
             })
+            
+            # Quick Presets - FIXED FUNCTIONALITY
+            st.markdown('<div class="subsection-header">🚀 Quick Presets</div>', unsafe_allow_html=True)
+            st.markdown("**Use these buttons to quickly test common lineup archetypes:**")
+            
+            preset_col1, preset_col2, preset_col3, preset_col4 = st.columns(4)
+            
+            with preset_col1:
+                if st.button("🏹 Elite Shooting", use_container_width=True, key="elite_shooting_btn"):
+                    st.session_state.simulator_values.update({
+                        'shooting': 'High',
+                        'scoring': 'High'
+                    })
+                    st.rerun()
+            
+            with preset_col2:
+                if st.button("🛡️ Lockdown Defense", use_container_width=True, key="defense_btn"):
+                    st.session_state.simulator_values.update({
+                        'net_rating': 'High',
+                        'tov': 'Low'
+                    })
+                    st.rerun()
+            
+            with preset_col3:
+                if st.button("🔄 Playmaker", use_container_width=True, key="playmaker_btn"):
+                    st.session_state.simulator_values.update({
+                        'ast_rate': 'High',
+                        'tov': 'Low'
+                    })
+                    st.rerun()
+            
+            with preset_col4:
+                if st.button("⚖️ Balanced", use_container_width=True, key="balanced_btn"):
+                    st.session_state.simulator_values.update({
+                        'shooting': 'Medium',
+                        'scoring': 'Medium',
+                        'ast_rate': 'Medium', 
+                        'tov': 'Medium',
+                        'net_rating': 'Medium',
+                        'orb_rate': 'Medium'
+                    })
+                    st.rerun()
 
         with result_col:
             st.markdown('<div class="subsection-header">📊 Efficiency Prediction</div>', unsafe_allow_html=True)
@@ -575,7 +508,7 @@ elif st.session_state.navigation == "🎮 Lineup Simulator":
             for i, level in enumerate(order):
                 col1, col2, col3 = st.columns([1, 3, 1])
                 with col1:
-                    st.write(f"**{level}**")
+                    st.write(level)
                 with col2:
                     st.progress(float(q.values[i]), text=f"{q.values[i]:.1%}")
                 with col3:
@@ -583,30 +516,188 @@ elif st.session_state.navigation == "🎮 Lineup Simulator":
             
             # Quick insights
             st.markdown("---")
-            st.markdown("### 💡 Lineup Assessment")
-            if efficiency_score > 70:
-                st.success("""
-                **🎯 ELITE LINEUP** 
-                - Exceptional efficiency potential
-                - Championship-caliber configuration
-                """)
-            elif efficiency_score > 50:
-                st.info("""
-                **👍 STRONG LINEUP**
-                - Well-balanced with good efficiency
-                - Playoff-ready configuration
-                """)
-            elif efficiency_score > 35:
-                st.warning("""
-                **💡 SOLID LINEUP**
-                - Competitive but has room for improvement
-                - Consider tweaking skill balances
-                """)
+            if efficiency_score > 60:
+                st.success("🎯 **Elite Lineup**: This configuration shows elite efficiency potential!")
+            elif efficiency_score > 40:
+                st.info("👍 **Strong Lineup**: Well-balanced with good efficiency prospects.")
             else:
-                st.error("""
-                **🚨 NEEDS IMPROVEMENT**
-                - Significant optimization needed
-                - Focus on shooting and turnover reduction
-                """)
+                st.warning("💡 **Needs Improvement**: Consider adjusting skill balances.")
 
-# ... (rest of the code for other sections remains the same with the new color scheme)
+elif st.session_state.navigation == "📈 Data Explorer":
+    st.markdown('<div class="main-header">📈 NBA Data Explorer</div>', unsafe_allow_html=True)
+    
+    # Load data for exploration
+    try:
+        data = pd.read_csv("nba_lineups_expanded_discretized.csv")
+        
+        st.markdown('<div class="section-header">📊 Dataset Overview</div>', unsafe_allow_html=True)
+        
+        # Statistics cards
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric("Total Lineups", f"{len(data):,}")
+        with col2:
+            st.metric("Data Columns", len(data.columns))
+        with col3:
+            st.metric("NBA Teams", "30")
+        with col4:
+            st.metric("Season", "2023-24")
+        
+        # Data preview
+        st.markdown('<div class="subsection-header">🔍 Data Preview</div>', unsafe_allow_html=True)
+        
+        # Column selection
+        available_columns = data.columns.tolist()
+        selected_columns = st.multiselect(
+            "Select columns to display:",
+            options=available_columns,
+            default=available_columns[:6] if len(available_columns) > 6 else available_columns
+        )
+        
+        # Display data
+        if selected_columns:
+            st.dataframe(data[selected_columns].head(20), use_container_width=True)
+        else:
+            st.info("Please select at least one column to display data.")
+            
+        # Data statistics
+        with st.expander("📈 Statistical Summary"):
+            st.dataframe(data[selected_columns].describe() if selected_columns else data.describe())
+            
+    except FileNotFoundError:
+        st.error("❌ Dataset not found. Please ensure 'nba_lineups_expanded_discretized.csv' is available.")
+        st.info("The app requires the NBA lineup data file to function properly.")
+
+elif st.session_state.navigation == "🔍 Sensitivity Analysis":
+    st.markdown('<div class="main-header">🔍 Sensitivity Analysis</div>', unsafe_allow_html=True)
+    
+    # Enhanced sensitivity analysis with visualizations - FIXED VISIBILITY
+    st.markdown("""
+    <div class="feature-card" style="color: #2c3e50;">
+    <h3 style="color: #2c3e50;">Understanding Factor Impact</h3>
+    <p style="color: #2c3e50;">This analysis reveals which player attributes have the greatest impact on lineup efficiency, 
+    helping prioritize skill development and roster construction decisions.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Factor impact visualization
+    factors = ['Shooting Efficiency', 'Turnover Control', 'Net Rating Impact', 'Assist Rate', 'Rebounding']
+    impacts = [64, 16, 12, 5, 3]
+    
+    st.markdown('<div class="subsection-header">📊 Factor Impact Ranking</div>', unsafe_allow_html=True)
+    
+    # Display factors with metrics
+    for i, (factor, impact) in enumerate(zip(factors, impacts)):
+        col1, col2, col3 = st.columns([3, 1, 1])
+        with col1:
+            st.write(f"**{i+1}. {factor}**")
+        with col2:
+            st.metric("Impact", f"{impact}%")
+        with col3:
+            st.progress(impact/100, text=f"Rank #{i+1}")
+    
+    # Impact visualization
+    st.markdown('<div class="subsection-header">📈 Impact Visualization</div>', unsafe_allow_html=True)
+    impact_df = pd.DataFrame({
+        'Factor': factors,
+        'Impact Score': impacts
+    })
+    st.bar_chart(impact_df.set_index('Factor'))
+
+elif st.session_state.navigation == "📋 Insights & Reports":
+    st.markdown('<div class="main-header">📋 Insights & Reports</div>', unsafe_allow_html=True)
+    
+    tab1, tab2, tab3 = st.tabs(["🎯 Key Findings", "💡 Recommendations", "🔮 Future Research"])
+    
+    with tab1:
+        # FIXED VISIBILITY FOR ALL CARDS
+        st.markdown("""
+        <div class="insight-card">
+        <h3 style="color: #2c3e50;">🏆 Most Impactful Factors</h3>
+        <ul style="color: #2c3e50;">
+        <li><strong>Shooting Dominance</strong>: +64% boost to high efficiency – prioritize 3PT threats!</li>
+        <li><strong>Turnover Control</strong>: Next biggest lever (+16%) - ball security is crucial</li>
+        <li><strong>Net Rating Impact</strong>: Defensive efficiency contributes +12% to overall efficiency</li>
+        </ul>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Key metrics
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Shooting Impact", "+64%", "Primary Driver")
+        with col2:
+            st.metric("Turnover Impact", "+16%", "Secondary Driver")
+        with col3:
+            st.metric("Defense Impact", "+12%", "Important Factor")
+            
+        st.markdown("""
+        <div class="feature-card">
+        <h4 style="color: #2c3e50;">📈 Additional Insights</h4>
+        <ul style="color: #2c3e50;">
+        <li>Elite shooting can compensate for average defense in offensive schemes</li>
+        <li>Turnover reduction has disproportionate positive impact on overall efficiency</li>  
+        <li>Balanced lineups consistently outperform specialized lineups over full seasons</li>
+        <li>The marginal gain from improving already-high skills diminishes rapidly</li>
+        </ul>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with tab2:
+        st.markdown("""
+        <div class="insight-card">
+        <h3 style="color: #2c3e50;">💡 Strategic Recommendations</h3>
+        
+        <p style="color: #2c3e50;"><strong>🎯 Roster Construction:</strong></p>
+        <ul style="color: #2c3e50;">
+        <li>Prioritize elite shooters in free agency and drafts</li>
+        <li>Value low-turnover playmakers over high-risk creators</li>
+        <li>Seek two-way players who impact both offense and defense</li>
+        </ul>
+        
+        <p style="color: #2c3e50;"><strong>🔄 Game Strategy:</strong></p>
+        <ul style="color: #2c3e50;">
+        <li>Maximize 3-point attempts from efficient shooters</li>
+        <li>Implement systematic turnover-reduction schemes</li>
+        <li>Use data-driven substitution patterns</li>
+        <li>Focus on defensive schemes that protect high-efficiency shooters</li>
+        </ul>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with tab3:
+        st.markdown("""
+        <div class="insight-card">
+        <h3 style="color: #2c3e50;">🔮 Research Roadmap</h3>
+        
+        <p style="color: #2c3e50;"><strong>⚡ Next Phase Enhancements:</strong></p>
+        <ul style="color: #2c3e50;">
+        <li>Real-time opponent-adjusted metrics</li>
+        <li>Player chemistry and fit analysis</li>
+        <li>Fatigue and back-to-back factors</li>
+        <li>Possession-level granular analysis</li>
+        </ul>
+        
+        <p style="color: #2c3e50;"><strong>🎯 Long-term Vision:</strong></p>
+        <ul style="color: #2c3e50;">
+        <li>Predictive lineup optimization</li>
+        <li>Dynamic in-game adjustments</li>
+        <li>AI-powered talent evaluation</li>
+        <li>Integration with player tracking data</li>
+        </ul>
+        </div>
+        """, unsafe_allow_html=True)
+
+# Footer with professional styling
+st.markdown("---")
+st.markdown("""
+<div style='text-align: center; color: #666; padding: 2rem;'>
+    <div style='font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem;'>
+        NBA Lineup Efficiency Analyzer
+    </div>
+    <div style='color: #888;'>
+        Deployed via Streamlit Cloud | Source: NBA API 2023-24 | 
+        Built with ❤️ using Bayesian Networks & Machine Learning
+    </div>
+</div>
+""", unsafe_allow_html=True)
