@@ -558,15 +558,16 @@ elif st.session_state.navigation == "🔗 Bayesian Network":
                     #     oversample = data[high_mask].sample(frac=oversample_frac, replace=True, random_state=42)
                     #     data = pd.concat([data, oversample]).reset_index(drop=True)
                     # Stronger balance to ~25% High (distributes for realistic Medium baselines)
+                    # Mild balance to ~10% High (capped to avoid over-boost)
                     current_high_pct = (data['Efficiency'] == 'High').mean()
-                    target_high_pct = 0.25
+                    target_high_pct = 0.10
                     if current_high_pct < target_high_pct:
                         high_mask = (data['Efficiency'] == 'High')
-                        num_to_add = int(len(data) * (target_high_pct - current_high_pct) / current_high_pct)  # Exact count for target
-                        if num_to_add > 0:
+                        num_to_add = min(int(len(data) * (target_high_pct - current_high_pct) / (1 - target_high_pct)), len(data) // 2)  # Cap at 50% data size
+                        if num_to_add > 0 and high_mask.sum() > 0:
                             oversample = data[high_mask].sample(n=num_to_add, replace=True, random_state=42)
                             data = pd.concat([data, oversample]).reset_index(drop=True)
-                            st.info(f"🔧 Balanced: Added {len(oversample)} High samples (now {target_high_pct*100:.0f}% High)")
+                            st.info(f"🔧 Mild balance: Added {len(oversample)} High samples (now ~{target_high_pct*100:.0f}% High)")
                     
                     edges = [
                         ('PLAYMAKING_Talent', 'AST_rate'),
