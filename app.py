@@ -937,19 +937,19 @@ else:
     """)
     
     
-        # Relationship visualization
-        st.markdown('<div class="subsection-header">Key Probabilistic Relationships</div>', unsafe_allow_html=True)
-        
-        relationships_data = {
-            'Relationship': [
-                'Scoring Talent → Shooting Efficiency',
-                'Playmaking Talent → Assist Rate', 
-                'Playmaking Talent → Turnover Rate',
-                'Defensive Talent → Net Rating Impact',
-                'Rebounding Talent → Offensive Rebound Rate'
-            ],
-            'Strength': [0.85, 0.78, -0.72, 0.81, 0.76]
-        }
+    # Relationship visualization
+    st.markdown('<div class="subsection-header">Key Probabilistic Relationships</div>', unsafe_allow_html=True)
+    
+    relationships_data = {
+        'Relationship': [
+            'Scoring Talent → Shooting Efficiency',
+            'Playmaking Talent → Assist Rate', 
+            'Playmaking Talent → Turnover Rate',
+            'Defensive Talent → Net Rating Impact',
+            'Rebounding Talent → Offensive Rebound Rate'
+        ],
+        'Strength': [0.85, 0.78, -0.72, 0.81, 0.76]
+    }
         
         relationships_df = pd.DataFrame(relationships_data)
         
