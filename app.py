@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
 from pgmpy.models import DiscreteBayesianNetwork
-from pgmpy.estimators import MaximumLikelihoodEstimator, BayesianEstimator
+from pgmpy.estimators import BayesianEstimator
 from pgmpy.inference import VariableElimination
 import warnings
 warnings.filterwarnings('ignore')
@@ -20,7 +20,6 @@ st.set_page_config(
 # Professional NBA-Inspired CSS Styling
 st.markdown("""
 <style>
-    /* Main styling - Professional NBA Theme */
     .main-header {
         font-size: 2.8rem;
         background: linear-gradient(135deg, #1D428A 0%, #C8102E 100%);
@@ -50,7 +49,6 @@ st.markdown("""
         line-height: 1.3;
     }
     
-    /* Card styling - Professional */
     .feature-card {
         background: white;
         padding: 1.8rem;
@@ -88,7 +86,6 @@ st.markdown("""
         transition: all 0.3s ease;
     }
     
-    /* Button styling - Professional */
     .stButton > button {
         background: linear-gradient(135deg, #1D428A 0%, #C8102E 100%);
         color: white;
@@ -107,7 +104,6 @@ st.markdown("""
         box-shadow: 0 6px 12px rgba(29, 66, 138, 0.3);
     }
     
-    /* Sidebar - Clean */
     .sidebar .sidebar-content {
         background: linear-gradient(180deg, #1a365d 0%, #2d3748 100%);
     }
@@ -121,20 +117,6 @@ st.markdown("""
         padding: 1rem 0;
     }
     
-    .sidebar .sidebar-content .stRadio label {
-        color: white !important;
-        font-weight: 600;
-        padding: 0.8rem;
-        border-radius: 8px;
-        margin: 0.2rem 0;
-        transition: all 0.3s ease;
-    }
-    
-    .sidebar .sidebar-content .stRadio label:hover {
-        background: rgba(255, 255, 255, 0.1);
-    }
-    
-    /* Tabs - Professional */
     .stTabs [data-baseweb="tab-list"] {
         gap: 1rem;
         background-color: #f7fafc;
@@ -158,28 +140,10 @@ st.markdown("""
         color: white !important;
     }
     
-    /* Text visibility and typography */
-    .stMarkdown, .stMarkdown p, .stMarkdown li {
-        color: #2d3748 !important;
-        line-height: 1.6;
-    }
-    
-    .feature-card h3, .feature-card h4, .feature-card p, .feature-card li {
-        color: #2d3748 !important;
-        line-height: 1.5;
-    }
-    
-    .insight-card h3, .insight-card h4, .insight-card p, .insight-card li {
-        color: #2d3748 !important;
-        line-height: 1.5;
-    }
-    
-    /* Custom container for better spacing */
     .main-container {
         padding: 0 1rem;
     }
     
-    /* Academic header styling */
     .academic-header {
         background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
         color: white;
@@ -191,7 +155,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize session state with proper default values
+# Initialize session state
 def initialize_session_state():
     if 'navigation' not in st.session_state:
         st.session_state.navigation = "🏠 Introduction"
@@ -215,7 +179,6 @@ def initialize_session_state():
     if 'bn_model' not in st.session_state:
         st.session_state.bn_model = None
 
-# Initialize session state
 initialize_session_state()
 
 # Sidebar Navigation
@@ -236,8 +199,6 @@ with st.sidebar:
     )
     
     st.markdown("---")
-    
-    # Quick stats
     st.markdown("### 📈 Quick Stats")
     col1, col2 = st.columns(2)
     with col1:
@@ -253,7 +214,7 @@ with st.sidebar:
         
         **Researcher:** Rediet Girmay  
         **ID:** GSE/0945-17  
-        **Date:** 25 October 2025
+        **Date:** 08 November 2025
         
         Advanced Bayesian Network analysis powered by 2023-24 NBA data.
         
@@ -276,17 +237,15 @@ st.markdown('<div class="main-container">', unsafe_allow_html=True)
 
 # Introduction Section
 if st.session_state.navigation == "🏠 Introduction":
-    # Academic Header
     st.markdown("""
     <div class="academic-header">
         <h2>NBA Lineup Efficiency Modeling using Discrete Bayesian Networks</h2>
-        <p><strong>Researcher:</strong> Rediet Girmay | <strong>ID:</strong> GSE/0945-17 | <strong>Date:</strong> 25 October 2025</p>
+        <p><strong>Researcher:</strong> Rediet Girmay | <strong>ID:</strong> GSE/0945-17 | <strong>Date:</strong> 08 November 2025</p>
     </div>
     """, unsafe_allow_html=True)
     
     st.markdown('<div class="main-header">🏀 NBA Lineup Efficiency Analyzer</div>', unsafe_allow_html=True)
     
-    # Problem Definition
     st.markdown('<div class="section-header">🎯 Research Problem</div>', unsafe_allow_html=True)
     
     st.markdown("""
@@ -304,7 +263,6 @@ if st.session_state.navigation == "🏠 Introduction":
     </div>
     """, unsafe_allow_html=True)
     
-    # Methodology Overview
     st.markdown('<div class="section-header">🔬 Methodology</div>', unsafe_allow_html=True)
     
     col1, col2 = st.columns(2)
@@ -337,7 +295,6 @@ if st.session_state.navigation == "🏠 Introduction":
         </div>
         """, unsafe_allow_html=True)
     
-    # Quick Start Section
     st.markdown('<div class="section-header">🚀 Get Started</div>', unsafe_allow_html=True)
     
     quick_col1, quick_col2, quick_col3 = st.columns(3)
@@ -435,7 +392,7 @@ elif st.session_state.navigation == "📊 Data Overview":
             
             fig, ax = plt.subplots(figsize=(10, 6))
             value_counts = discretized_data[feature_to_plot].value_counts().sort_index()
-            colors = ['#e74c3c', '#f39c12', '#27ae60']  # Red, Orange, Green for Low, Medium, High
+            colors = ['#e74c3c', '#f39c12', '#27ae60']
             
             bars = ax.bar(value_counts.index, value_counts.values, 
                          color=colors[:len(value_counts)], alpha=0.8, edgecolor='black')
@@ -444,7 +401,6 @@ elif st.session_state.navigation == "📊 Data Overview":
             ax.set_ylabel("Count", fontweight='bold')
             ax.grid(True, alpha=0.3, axis='y')
             
-            # Add value labels on bars
             for bar in bars:
                 height = bar.get_height()
                 ax.text(bar.get_x() + bar.get_width()/2., height + 0.1,
@@ -453,7 +409,6 @@ elif st.session_state.navigation == "📊 Data Overview":
             plt.xticks(rotation=45)
             st.pyplot(fig)
             
-            # Data quality information
             st.markdown('<div class="subsection-header">Data Quality Report</div>', unsafe_allow_html=True)
             
             missing_data = discretized_data.isnull().sum()
@@ -481,11 +436,9 @@ elif st.session_state.navigation == "🔗 Bayesian Network":
     col1, col2 = st.columns([2, 1])
     
     with col1:
-        # Network Visualization
         st.markdown('<div class="subsection-header">Network Structure Visualization</div>', unsafe_allow_html=True)
         
         try:
-            # Define the DAG structure based on actual model from notebook
             edges = [
                 ('PLAYMAKING_Talent', 'AST_rate'),
                 ('PLAYMAKING_Talent', 'TOV_rate'),
@@ -500,14 +453,11 @@ elif st.session_state.navigation == "🔗 Bayesian Network":
                 ('ORB_rate', 'Efficiency')
             ]
             
-            # Create graph
             G = nx.DiGraph()
             G.add_edges_from(edges)
             
-            # Create professional visualization
             fig, ax = plt.subplots(figsize=(14, 10))
             
-            # Use hierarchical layout as in notebook
             pos = {
                 'SCORING_Talent': (-4, 2),
                 'PLAYMAKING_Talent': (-2, 2),
@@ -522,7 +472,6 @@ elif st.session_state.navigation == "🔗 Bayesian Network":
                 'Efficiency': (0, -2)
             }
             
-            # Color nodes by type (matching notebook colors)
             talent_nodes = ['SCORING_Talent','PLAYMAKING_Talent','REBOUNDING_Talent','DEFENSIVE_Talent','NET_RATING_Talent']
             observed_nodes = ['Shooting_Efficiency','AST_rate','TOV_rate','ORB_rate','Net_Rating_Impact']
             target_node = ['Efficiency']
@@ -530,11 +479,11 @@ elif st.session_state.navigation == "🔗 Bayesian Network":
             node_colors = []
             for node in G.nodes():
                 if node in talent_nodes:
-                    node_colors.append('#A29BFE')  # Purple for latent talent (matching notebook)
+                    node_colors.append('#A29BFE')
                 elif node in observed_nodes:
-                    node_colors.append('#55EFC4')  # Teal for observed performance (matching notebook)
+                    node_colors.append('#55EFC4')
                 else:
-                    node_colors.append('#FFEAA7')  # Yellow for target efficiency (matching notebook)
+                    node_colors.append('#FFEAA7')
             
             nx.draw_networkx_nodes(G, pos, node_color=node_colors, 
                                  node_size=2800, alpha=0.9, edgecolors='black', 
@@ -547,7 +496,6 @@ elif st.session_state.navigation == "🔗 Bayesian Network":
                         fontsize=16, fontweight='bold', pad=30)
             ax.axis('off')
             
-            # Add legend
             legend_elements = [
                 plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='#A29BFE', markersize=10, label='Latent Talent'),
                 plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='#55EFC4', markersize=10, label='Observed Performance'),
@@ -593,14 +541,11 @@ elif st.session_state.navigation == "🔗 Bayesian Network":
         </div>
         """, unsafe_allow_html=True)
         
-        # Training Demo
         if st.button("🧠 Train Bayesian Network", use_container_width=True):
             with st.spinner("Training Discrete Bayesian Network..."):
                 try:
-                    # Load and prepare data
                     data = pd.read_csv("nba_lineups_expanded_discretized.csv")
                     
-                    # Define order and ensure categorical
                     order = ['Low', 'Medium', 'High']
                     for col in data.columns:
                         data[col] = pd.Categorical(data[col], categories=order, ordered=True)
@@ -611,9 +556,7 @@ elif st.session_state.navigation == "🔗 Bayesian Network":
                         oversample_frac = (0.2 / high_mask.mean()) - 1
                         oversample = data[high_mask].sample(frac=oversample_frac, replace=True, random_state=42)
                         data = pd.concat([data, oversample]).reset_index(drop=True)
-                        print(f"Balanced: Added {len(oversample)} High samples")  # Debug log
                     
-                    # Define edges (same as visualization)
                     edges = [
                         ('PLAYMAKING_Talent', 'AST_rate'),
                         ('PLAYMAKING_Talent', 'TOV_rate'),
@@ -628,16 +571,13 @@ elif st.session_state.navigation == "🔗 Bayesian Network":
                         ('ORB_rate', 'Efficiency')
                     ]
                     
-                    # Create and fit model
                     model = DiscreteBayesianNetwork(edges)
                     model.fit(data, estimator=BayesianEstimator, 
                              state_names={col: order for col in data.columns},
                              equivalent_sample_size=10)
                     
-                    # Create inference engine
                     infer = VariableElimination(model)
                     
-                    # Store in session state
                     st.session_state.model_trained = True
                     st.session_state.inference_engine = infer
                     st.session_state.bn_model = model
@@ -659,11 +599,9 @@ elif st.session_state.navigation == "🔗 Bayesian Network":
 elif st.session_state.navigation == "🎮 Lineup Simulator":
     st.markdown('<div class="main-header">🎮 Interactive Lineup Simulator</div>', unsafe_allow_html=True)
     
-    # Safe access to session state values with defaults
     def get_simulator_value(key, default='Medium'):
         return st.session_state.simulator_values.get(key, default)
     
-    # Initialize any missing keys in session state
     required_keys = ['Shooting_Efficiency', 'SCORING_Talent', 'AST_rate', 'TOV_rate', 'Net_Rating_Impact', 'ORB_rate']
     for key in required_keys:
         if key not in st.session_state.simulator_values:
@@ -671,7 +609,6 @@ elif st.session_state.navigation == "🎮 Lineup Simulator":
     
     st.markdown('<div class="section-header">⚙️ Lineup Configuration</div>', unsafe_allow_html=True)
     
-    # Current Configuration Display
     st.markdown("### 🎯 Current Configuration")
     config_cols = st.columns(3)
     with config_cols[0]:
@@ -681,7 +618,6 @@ elif st.session_state.navigation == "🎮 Lineup Simulator":
     with config_cols[2]:
         st.metric("Playmaking", get_simulator_value('AST_rate'))
     
-    # Manual Configuration
     st.markdown('<div class="subsection-header">⚙️ Manual Configuration</div>', unsafe_allow_html=True)
     
     order = ['Low', 'Medium', 'High']
@@ -713,7 +649,6 @@ elif st.session_state.navigation == "🎮 Lineup Simulator":
             orb_rate = st.selectbox("Offensive Rebound Rate", order, 
                                   index=order.index(get_simulator_value('ORB_rate')))
     
-    # Update session state safely
     st.session_state.simulator_values.update({
         'Shooting_Efficiency': shooting, 
         'SCORING_Talent': scoring, 
@@ -723,7 +658,6 @@ elif st.session_state.navigation == "🎮 Lineup Simulator":
         'ORB_rate': orb_rate
     })
     
-    # Quick Presets
     st.markdown('<div class="subsection-header">🚀 Quick Lineup Presets</div>', unsafe_allow_html=True)
     
     preset_col1, preset_col2, preset_col3, preset_col4 = st.columns(4)
@@ -774,7 +708,6 @@ elif st.session_state.navigation == "🎮 Lineup Simulator":
     st.markdown('<div class="subsection-header">📊 Efficiency Prediction Results</div>', unsafe_allow_html=True)
     
     if st.session_state.model_trained and st.session_state.inference_engine is not None:
-        # Calculate prediction using actual Bayesian Network
         evidence = {
             'Shooting_Efficiency': get_simulator_value('Shooting_Efficiency'),
             'SCORING_Talent': get_simulator_value('SCORING_Talent'),
@@ -784,7 +717,6 @@ elif st.session_state.navigation == "🎮 Lineup Simulator":
             'ORB_rate': get_simulator_value('ORB_rate')
         }
         
-        # Filter evidence to only include variables that exist in the model
         valid_evidence = {k: v for k, v in evidence.items() 
                          if k in st.session_state.bn_model.nodes()}
         
@@ -793,16 +725,14 @@ elif st.session_state.navigation == "🎮 Lineup Simulator":
                 variables=['Efficiency'], 
                 evidence=valid_evidence
             )
-            efficiency_score = q.values[2] * 100  # Probability of 'High' efficiency
+            efficiency_score = q.values[2] * 100
             probabilities = q.values
         except Exception as e:
             st.error(f"Inference error: {e}")
-            # Fallback to demo mode
             efficiency_score = 50.0
             probabilities = [0.3, 0.4, 0.3]
     else:
-        # Demo mode heuristic (fallback)
-        st.info("🔧 Using heuristic prediction (train model for Bayesian inference)")
+        st.warning("🧠 Train the model first in 'Bayesian Network' tab for accurate Bayesian predictions! Using heuristic fallback.")
         
         talent_score = sum([
             2 if get_simulator_value('SCORING_Talent') == 'High' else 
@@ -823,9 +753,8 @@ elif st.session_state.navigation == "🎮 Lineup Simulator":
         
         total_score = talent_score + performance_score
         efficiency_score = min(85, max(15, 50 + total_score * 5))
-        probabilities = [0.3, 0.4, 0.3]  # Demo probabilities
+        probabilities = np.array([0.3, 0.4, 0.3])
     
-    # Results in columns
     result_col1, result_col2 = st.columns([1, 2])
     
     with result_col1:
@@ -833,7 +762,6 @@ elif st.session_state.navigation == "🎮 Lineup Simulator":
         st.metric("High Efficiency Probability", f"{efficiency_score:.1f}%", 
                  delta=f"{delta_value:+.1f}% vs baseline")
         
-        # Quick insights
         st.markdown("### 💡 Lineup Assessment")
         if efficiency_score > 60:
             st.success("**🎯 ELITE LINEUP**\n\nExceptional efficiency potential with championship-caliber configuration!")
@@ -843,10 +771,8 @@ elif st.session_state.navigation == "🎮 Lineup Simulator":
             st.warning("**💡 NEEDS IMPROVEMENT**\n\nConsider adjusting skill balances.")
     
     with result_col2:
-        # Professional Distribution Chart
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
         
-        # Bar chart
         colors = ['#e74c3c', '#f39c12', '#27ae60']
         bars = ax1.bar(order, probabilities * 100, color=colors, alpha=0.8, edgecolor='black', linewidth=1)
         ax1.set_ylabel('Probability (%)', fontweight='bold')
@@ -854,12 +780,10 @@ elif st.session_state.navigation == "🎮 Lineup Simulator":
         ax1.grid(True, alpha=0.3, linestyle='--')
         ax1.set_ylim(0, 100)
         
-        # Add value labels on bars
         for bar, value in zip(bars, probabilities * 100):
             ax1.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 1,
                     f'{value:.1f}%', ha='center', va='bottom', fontweight='bold', fontsize=11)
         
-        # Pie chart
         wedges, texts, autotexts = ax2.pie(probabilities * 100, labels=order, autopct='%1.1f%%', 
                                           startangle=90, colors=colors)
         for autotext in autotexts:
@@ -881,15 +805,40 @@ elif st.session_state.navigation == "📈 Results & Insights":
         st.markdown("""
         <div class="insight-card">
         <h3>🏆 Most Impactful Factors (Model-Derived)</h3>
-        <ul>
-        <li><strong>Shooting Dominance</strong>: +64% boost to high efficiency – prioritize 3PT threats!</li>
-        <li><strong>Turnover Control</strong>: Next biggest lever (+16%) - ball security is crucial</li>
-        <li><strong>Net Rating Impact</strong>: Defensive efficiency contributes +12% to overall efficiency</li>
-        </ul>
-        </div>
         """, unsafe_allow_html=True)
         
-        # Key metrics
+        if st.session_state.model_trained:
+            baseline_ev = {'Shooting_Efficiency': 'Medium', 'Net_Rating_Impact': 'Medium', 'TOV_rate': 'Medium'}
+            base_q = st.session_state.inference_engine.query(variables=['Efficiency'], evidence=baseline_ev)
+            base_high = base_q.values[2]
+            
+            treatments = [
+                ('Shooting_Efficiency', 'High', "Shooting → High"),
+                ('Net_Rating_Impact', 'High', "Net Rating → High"),
+                ('TOV_rate', 'Low', "TOV → Low"),
+                ('AST_rate', 'High', "Assists → High"),
+                ('ORB_rate', 'High', "Rebounds → High")
+            ]
+            sens_data = []
+            for var, val, label in treatments:
+                ev = {**baseline_ev, var: val}
+                q_s = st.session_state.inference_engine.query(variables=['Efficiency'], evidence=ev)
+                delta = (q_s.values[2] - base_high) * 100
+                sens_data.append({'Factor': label, 'Δ P(High)': f"{delta:+.1f}%"})
+            
+            df_sens = pd.DataFrame(sens_data).sort_values('Δ P(High)', key=lambda x: float(x.str.rstrip('%').str.replace('+', '').str.replace('-', '-')), ascending=False)
+            st.table(df_sens)
+        else:
+            st.markdown("""
+            <ul>
+            <li><strong>Shooting Dominance</strong>: +64% boost to high efficiency – prioritize 3PT threats!</li>
+            <li><strong>Turnover Control</strong>: Next biggest lever (+16%) - ball security is crucial</li>
+            <li><strong>Net Rating Impact</strong>: Defensive efficiency contributes +12% to overall efficiency</li>
+            </ul>
+            """, unsafe_allow_html=True)
+        
+        st.markdown("</div>", unsafe_allow_html=True)
+        
         col1, col2, col3 = st.columns(3)
         with col1:
             st.metric("Shooting Impact", "+64%", "Primary Driver")
@@ -897,96 +846,55 @@ elif st.session_state.navigation == "📈 Results & Insights":
             st.metric("Turnover Impact", "+16%", "Secondary Driver")
         with col3:
             st.metric("Defense Impact", "+12%", "Important Factor")
-
-        # Dynamic sensitivity from model 
-st.markdown('<div class="subsection-header">📊 Efficiency Prediction Results</div>', unsafe_allow_html=True)
-
-if st.session_state.model_trained and st.session_state.inference_engine is not None:
-    
-    baseline_ev = {'Shooting_Efficiency': 'Medium', 'Net_Rating_Impact': 'Medium', 'TOV_rate': 'Medium'}
-    base_q = st.session_state.inference_engine.query(variables=['Efficiency'], evidence=baseline_ev)
-    base_high = base_q.values[2]
-    
-
-    treatments = [
-        ('Shooting_Efficiency', 'High', "Shooting → High"),
-        ('Net_Rating_Impact', 'High', "Net Rating → High"),
-        ('TOV_rate', 'Low', "TOV → Low"),
-        ('AST_rate', 'High', "Assists → High"),
-        ('ORB_rate', 'High', "Rebounds → High")
-    ]
-    sens_data = []
-    for var, val, label in treatments:
-        ev = {**baseline_ev, var: val}
-        q_s = st.session_state.inference_engine.query(variables=['Efficiency'], evidence=ev)
-        delta = (q_s.values[2] - base_high) * 100
-        sens_data.append({'Factor': label, 'Δ P(High)': f"{delta:+.1f}%"})
-    
-    df_sens = pd.DataFrame(sens_data).sort_values('Δ P(High)', key=lambda x: float(x.str.rstrip('%').str.replace('+', '').str.replace('-', '-')), ascending=False)
-    st.table(df_sens)
-else:
-    st.warning("🧠 Train the model first in 'Bayesian Network' tab for accurate Bayesian predictions! Using heuristic fallback.")
-    probabilities = np.array([0.3, 0.4, 0.3])
-    # Fallback hardcoded (your original)
-    st.markdown("""
-    <ul>
-    <li><strong>Shooting Dominance</strong>: +64% boost to high efficiency – prioritize 3PT threats!</li>
-    <li><strong>Turnover Control</strong>: Next biggest lever (+16%) - ball security is crucial</li>
-    <li><strong>Net Rating Impact</strong>: Defensive efficiency contributes +12% to overall efficiency</li>
-    </ul>
-    """)
-    
-    
-    # Relationship visualization
-    st.markdown('<div class="subsection-header">Key Probabilistic Relationships</div>', unsafe_allow_html=True)
-    
-    relationships_data = {
-        'Relationship': [
-            'Scoring Talent → Shooting Efficiency',
-            'Playmaking Talent → Assist Rate', 
-            'Playmaking Talent → Turnover Rate',
-            'Defensive Talent → Net Rating Impact',
-            'Rebounding Talent → Offensive Rebound Rate'
-        ],
-        'Strength': [0.85, 0.78, -0.72, 0.81, 0.76]
-    }
         
-    relationships_df = pd.DataFrame(relationships_data)
+        st.markdown('<div class="subsection-header">Key Probabilistic Relationships</div>', unsafe_allow_html=True)
         
-    fig, ax = plt.subplots(figsize=(10, 6))
-    relationships_df = relationships_df.sort_values('Strength', ascending=True)
-    
-    colors = ['red' if x < 0 else 'green' for x in relationships_df['Strength']]
-    bars = ax.barh(relationships_df['Relationship'], relationships_df['Strength'], 
-                   color=colors, alpha=0.7, edgecolor='black')
-    
-    ax.set_xlabel('Relationship Strength', fontweight='bold')
-    ax.set_title('Key Bayesian Network Relationships', fontweight='bold', pad=20)
-    ax.set_xlim(-1, 1)
-    ax.axvline(x=0, color='black', linestyle='-', alpha=0.3)
-    ax.grid(True, alpha=0.3, axis='x')
+        relationships_data = {
+            'Relationship': [
+                'Scoring Talent → Shooting Efficiency',
+                'Playmaking Talent → Assist Rate', 
+                'Playmaking Talent → Turnover Rate',
+                'Defensive Talent → Net Rating Impact',
+                'Rebounding Talent → Offensive Rebound Rate'
+            ],
+            'Strength': [0.85, 0.78, -0.72, 0.81, 0.76]
+        }
         
-    # Add value labels
-    for bar in bars:
-        width = bar.get_width()
-        ax.text(width + (0.02 if width >= 0 else -0.02), bar.get_y() + bar.get_height()/2, 
-                f'{width:.2f}', ha='left' if width >= 0 else 'right', va='center', 
-                fontweight='bold')
+        relationships_df = pd.DataFrame(relationships_data)
+        
+        fig, ax = plt.subplots(figsize=(10, 6))
+        relationships_df = relationships_df.sort_values('Strength', ascending=True)
+        
+        colors = ['red' if x < 0 else 'green' for x in relationships_df['Strength']]
+        bars = ax.barh(relationships_df['Relationship'], relationships_df['Strength'], 
+                       color=colors, alpha=0.7, edgecolor='black')
+        
+        ax.set_xlabel('Relationship Strength', fontweight='bold')
+        ax.set_title('Key Bayesian Network Relationships', fontweight='bold', pad=20)
+        ax.set_xlim(-1, 1)
+        ax.axvline(x=0, color='black', linestyle='-', alpha=0.3)
+        ax.grid(True, alpha=0.3, axis='x')
+        
+        for bar in bars:
+            width = bar.get_width()
+            ax.text(width + (0.02 if width >= 0 else -0.02), bar.get_y() + bar.get_height()/2, 
+                    f'{width:.2f}', ha='left' if width >= 0 else 'right', va='center', 
+                    fontweight='bold')
+        
+        st.pyplot(fig)
+        
+        st.markdown("""
+        <div class="feature-card">
+        <h4>📈 Additional Insights</h4>
+        <ul>
+        <li>Elite shooting can compensate for average defense in offensive schemes</li>
+        <li>Turnover reduction has disproportionate positive impact on overall efficiency</li>  
+        <li>Balanced lineups consistently outperform specialized lineups over full seasons</li>
+        <li>The marginal gain from improving already-high skills diminishes rapidly</li>
+        </ul>
+        </div>
+        """, unsafe_allow_html=True)
     
-    st.pyplot(fig)
-    
-    st.markdown("""
-    <div class="feature-card">
-    <h4>📈 Additional Insights</h4>
-    <ul>
-    <li>Elite shooting can compensate for average defense in offensive schemes</li>
-    <li>Turnover reduction has disproportionate positive impact on overall efficiency</li>  
-    <li>Balanced lineups consistently outperform specialized lineups over full seasons</li>
-    <li>The marginal gain from improving already-high skills diminishes rapidly</li>
-    </ul>
-    </div>
-    """, unsafe_allow_html=True)
-
     with tab2:
         st.markdown('<div class="subsection-header">Model Validation Metrics</div>', unsafe_allow_html=True)
         
@@ -998,7 +906,6 @@ else:
         
         metrics_df = pd.DataFrame(metrics_data)
         
-        # Display metrics
         col1, col2 = st.columns(2)
         
         with col1:
@@ -1081,7 +988,7 @@ else:
         </div>
         """, unsafe_allow_html=True)
 
-st.markdown('</div>', unsafe_allow_html=True)  # Close main container
+st.markdown('</div>', unsafe_allow_html=True)
 
 # Professional Footer
 st.markdown("---")
