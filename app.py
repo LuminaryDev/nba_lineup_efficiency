@@ -621,7 +621,7 @@ elif st.session_state.navigation == "🔗 Bayesian Network":
                     ]
                     
                     # Create and fit model
-                    model = DiscreteDiscreteBayesianNetwork(edges)
+                    model = DiscreteBayesianNetwork(edges)
                     model.fit(data, estimator=BayesianEstimator, 
                              state_names={col: order for col in data.columns},
                              equivalent_sample_size=10)
