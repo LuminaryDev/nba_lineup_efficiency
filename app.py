@@ -10,7 +10,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # Set professional style for matplotlib without seaborn
-plt.style.use('default')  # Use default style which is clean and professional
+plt.style.use('default')
 
 # Page configuration
 st.set_page_config(
@@ -106,22 +106,7 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(49, 130, 206, 0.3);
     }
     
-    /* Sidebar - Clean */
-    .sidebar .sidebar-content {
-        background: #f8fafc;
-        border-right: 1px solid #e2e8f0;
-    }
-    
-    .sidebar-title {
-        color: #2d3748;
-        font-size: 1.5rem;
-        font-weight: 700;
-        text-align: center;
-        margin-bottom: 2rem;
-        padding: 1rem 0;
-    }
-    
-    /* Tabs - Professional */
+    /* Tab styling - FIXED: Make tabs always visible */
     .stTabs [data-baseweb="tab-list"] {
         gap: 1rem;
         background-color: #f7fafc;
@@ -137,11 +122,32 @@ st.markdown("""
         border: 1px solid #e2e8f0;
         font-weight: 600;
         font-size: 0.95rem;
+        color: #4a5568 !important;
     }
     
     .stTabs [aria-selected="true"] {
         background: linear-gradient(135deg, #3182ce 0%, #2c5aa0 100%) !important;
         color: white !important;
+    }
+    
+    .stTabs [aria-selected="false"] {
+        background: white !important;
+        color: #4a5568 !important;
+    }
+    
+    /* Sidebar - Clean */
+    .sidebar .sidebar-content {
+        background: #f8fafc;
+        border-right: 1px solid #e2e8f0;
+    }
+    
+    .sidebar-title {
+        color: #2d3748;
+        font-size: 1.5rem;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 2rem;
+        padding: 1rem 0;
     }
     
     /* Text visibility and typography */
@@ -247,10 +253,9 @@ with st.sidebar:
     st.markdown("---")
     st.caption("Built by Rediet Girmay | 2025")
 
-# Update navigation
+# Update navigation - FIXED: Proper navigation handling
 if app_section != st.session_state.navigation:
     st.session_state.navigation = app_section
-    st.rerun()
 
 # Main content container
 st.markdown('<div class="main-container">', unsafe_allow_html=True)
@@ -301,7 +306,7 @@ if st.session_state.navigation == "📊 Dashboard Overview":
         </div>
         """, unsafe_allow_html=True)
     
-    # Quick Start Section
+    # Quick Start Section - FIXED: Buttons now work properly
     st.markdown('<div class="section-header">⚡ Quick Start</div>', unsafe_allow_html=True)
     
     quick_col1, quick_col2, quick_col3 = st.columns(3)
@@ -385,7 +390,7 @@ if st.session_state.navigation == "📊 Dashboard Overview":
         </div>
         """, unsafe_allow_html=True)
 
-# Lineup Simulator Section
+# Lineup Simulator Section - REORGANIZED: Buttons below manual config, graph updates with buttons
 elif st.session_state.navigation == "🎮 Lineup Simulator":
     st.markdown('<div class="main-header">🎮 Lineup Efficiency Simulator</div>', unsafe_allow_html=True)
     
@@ -439,105 +444,120 @@ elif st.session_state.navigation == "🎮 Lineup Simulator":
 
         st.markdown('<div class="section-header">⚙️ Lineup Configuration</div>', unsafe_allow_html=True)
         
-        control_col, result_col = st.columns([2, 1])
+        # REORGANIZED: Single column layout for better flow
+        st.markdown("### 🎯 Current Configuration")
+        config_cols = st.columns(3)
+        with config_cols[0]:
+            st.metric("Shooting", st.session_state.simulator_values['shooting'])
+        with config_cols[1]:
+            st.metric("Defense", st.session_state.simulator_values['net_rating'])
+        with config_cols[2]:
+            st.metric("Playmaking", st.session_state.simulator_values['ast_rate'])
         
-        with control_col:
-            # Current Configuration Display
-            st.markdown("### 🎯 Current Configuration")
-            config_cols = st.columns(3)
-            with config_cols[0]:
-                st.metric("Shooting", st.session_state.simulator_values['shooting'])
-            with config_cols[1]:
-                st.metric("Defense", st.session_state.simulator_values['net_rating'])
-            with config_cols[2]:
-                st.metric("Playmaking", st.session_state.simulator_values['ast_rate'])
-            
-            # Quick Presets
-            st.markdown('<div class="subsection-header">🚀 Quick Lineup Presets</div>', unsafe_allow_html=True)
-            
-            preset_col1, preset_col2, preset_col3, preset_col4 = st.columns(4)
-            
-            with preset_col1:
-                if st.button("🏹\nElite Shooting", use_container_width=True, key="elite_shooting_btn"):
-                    st.session_state.simulator_values.update({'shooting': 'High', 'scoring': 'High'})
-                    st.success("✅ Elite Shooting lineup configured!")
-                    st.rerun()
-            
-            with preset_col2:
-                if st.button("🛡️\nLockdown Defense", use_container_width=True, key="defense_btn"):
-                    st.session_state.simulator_values.update({'net_rating': 'High', 'tov': 'Low'})
-                    st.success("✅ Lockdown Defense lineup configured!")
-                    st.rerun()
-            
-            with preset_col3:
-                if st.button("🔄\nPlaymaker", use_container_width=True, key="playmaker_btn"):
-                    st.session_state.simulator_values.update({'ast_rate': 'High', 'tov': 'Low'})
-                    st.success("✅ Playmaker lineup configured!")
-                    st.rerun()
-            
-            with preset_col4:
-                if st.button("⚖️\nBalanced", use_container_width=True, key="balanced_btn"):
-                    st.session_state.simulator_values.update({
-                        'shooting': 'Medium', 'scoring': 'Medium', 'ast_rate': 'Medium', 
-                        'tov': 'Medium', 'net_rating': 'Medium', 'orb_rate': 'Medium'
-                    })
-                    st.success("✅ Balanced lineup configured!")
-                    st.rerun()
-            
-            # Manual Configuration
-            st.markdown('<div class="subsection-header">⚙️ Manual Configuration</div>', unsafe_allow_html=True)
-            
-            with st.expander("🎯 Shooting & Scoring", expanded=True):
-                shooting_col, scoring_col = st.columns(2)
-                with shooting_col:
-                    shooting = st.selectbox("Shooting Efficiency", order, 
-                                          index=order.index(st.session_state.simulator_values['shooting']))
-                with scoring_col:
-                    scoring = st.selectbox("Scoring Talent", order, 
-                                         index=order.index(st.session_state.simulator_values['scoring']))
-            
-            with st.expander("🔄 Playmaking & Ball Control", expanded=True):
-                play_col1, play_col2 = st.columns(2)
-                with play_col1:
-                    ast_rate = st.selectbox("Assist Rate", order, 
-                                          index=order.index(st.session_state.simulator_values['ast_rate']))
-                with play_col2:
-                    tov = st.selectbox("Turnover Rate", order, 
-                                     index=order.index(st.session_state.simulator_values['tov']))
-            
-            with st.expander("🛡️ Defense & Rebounding"):
-                def_col1, def_col2 = st.columns(2)
-                with def_col1:
-                    net_rating = st.selectbox("Net Rating Impact", order, 
-                                            index=order.index(st.session_state.simulator_values['net_rating']))
-                with def_col2:
-                    orb_rate = st.selectbox("Offensive Rebound Rate", order, 
-                                          index=order.index(st.session_state.simulator_values['orb_rate']))
-            
-            st.session_state.simulator_values.update({
-                'shooting': shooting, 'scoring': scoring, 'ast_rate': ast_rate,
-                'tov': tov, 'net_rating': net_rating, 'orb_rate': orb_rate
-            })
-
-        with result_col:
-            st.markdown('<div class="subsection-header">📊 Efficiency Prediction</div>', unsafe_allow_html=True)
-            
-            # Calculate prediction
-            evidence = {
-                'Shooting_Efficiency': st.session_state.simulator_values['shooting'],
-                'SCORING_Talent': st.session_state.simulator_values['scoring'],
-                'Net_Rating_Impact': st.session_state.simulator_values['net_rating'],
-                'TOV_rate': st.session_state.simulator_values['tov'],
-                'AST_rate': st.session_state.simulator_values['ast_rate'],
-                'ORB_rate': st.session_state.simulator_values['orb_rate']
-            }
-            evidence = {k: v for k, v in evidence.items() if k in model.nodes()}
-            q = infer.query(variables=['Efficiency'], evidence=evidence)
-            
-            efficiency_score = q.values[2] * 100
+        # Manual Configuration First
+        st.markdown('<div class="subsection-header">⚙️ Manual Configuration</div>', unsafe_allow_html=True)
+        
+        with st.expander("🎯 Shooting & Scoring", expanded=True):
+            shooting_col, scoring_col = st.columns(2)
+            with shooting_col:
+                shooting = st.selectbox("Shooting Efficiency", order, 
+                                      index=order.index(st.session_state.simulator_values['shooting']))
+            with scoring_col:
+                scoring = st.selectbox("Scoring Talent", order, 
+                                     index=order.index(st.session_state.simulator_values['scoring']))
+        
+        with st.expander("🔄 Playmaking & Ball Control", expanded=True):
+            play_col1, play_col2 = st.columns(2)
+            with play_col1:
+                ast_rate = st.selectbox("Assist Rate", order, 
+                                      index=order.index(st.session_state.simulator_values['ast_rate']))
+            with play_col2:
+                tov = st.selectbox("Turnover Rate", order, 
+                                 index=order.index(st.session_state.simulator_values['tov']))
+        
+        with st.expander("🛡️ Defense & Rebounding"):
+            def_col1, def_col2 = st.columns(2)
+            with def_col1:
+                net_rating = st.selectbox("Net Rating Impact", order, 
+                                        index=order.index(st.session_state.simulator_values['net_rating']))
+            with def_col2:
+                orb_rate = st.selectbox("Offensive Rebound Rate", order, 
+                                      index=order.index(st.session_state.simulator_values['orb_rate']))
+        
+        st.session_state.simulator_values.update({
+            'shooting': shooting, 'scoring': scoring, 'ast_rate': ast_rate,
+            'tov': tov, 'net_rating': net_rating, 'orb_rate': orb_rate
+        })
+        
+        # Quick Presets AFTER Manual Configuration
+        st.markdown('<div class="subsection-header">🚀 Quick Lineup Presets</div>', unsafe_allow_html=True)
+        st.markdown("**Click any preset to instantly configure optimal lineup archetypes:**")
+        
+        preset_col1, preset_col2, preset_col3, preset_col4 = st.columns(4)
+        
+        with preset_col1:
+            if st.button("🏹\nElite Shooting", use_container_width=True, key="elite_shooting_btn"):
+                st.session_state.simulator_values.update({'shooting': 'High', 'scoring': 'High'})
+                st.success("✅ Elite Shooting lineup configured!")
+                st.rerun()
+        
+        with preset_col2:
+            if st.button("🛡️\nLockdown Defense", use_container_width=True, key="defense_btn"):
+                st.session_state.simulator_values.update({'net_rating': 'High', 'tov': 'Low'})
+                st.success("✅ Lockdown Defense lineup configured!")
+                st.rerun()
+        
+        with preset_col3:
+            if st.button("🔄\nPlaymaker", use_container_width=True, key="playmaker_btn"):
+                st.session_state.simulator_values.update({'ast_rate': 'High', 'tov': 'Low'})
+                st.success("✅ Playmaker lineup configured!")
+                st.rerun()
+        
+        with preset_col4:
+            if st.button("⚖️\nBalanced", use_container_width=True, key="balanced_btn"):
+                st.session_state.simulator_values.update({
+                    'shooting': 'Medium', 'scoring': 'Medium', 'ast_rate': 'Medium', 
+                    'tov': 'Medium', 'net_rating': 'Medium', 'orb_rate': 'Medium'
+                })
+                st.success("✅ Balanced lineup configured!")
+                st.rerun()
+        
+        st.markdown("---")
+        
+        # Results Section - Graph updates based on configuration
+        st.markdown('<div class="subsection-header">📊 Efficiency Prediction Results</div>', unsafe_allow_html=True)
+        
+        # Calculate prediction
+        evidence = {
+            'Shooting_Efficiency': st.session_state.simulator_values['shooting'],
+            'SCORING_Talent': st.session_state.simulator_values['scoring'],
+            'Net_Rating_Impact': st.session_state.simulator_values['net_rating'],
+            'TOV_rate': st.session_state.simulator_values['tov'],
+            'AST_rate': st.session_state.simulator_values['ast_rate'],
+            'ORB_rate': st.session_state.simulator_values['orb_rate']
+        }
+        evidence = {k: v for k, v in evidence.items() if k in model.nodes()}
+        q = infer.query(variables=['Efficiency'], evidence=evidence)
+        
+        efficiency_score = q.values[2] * 100
+        
+        # Results in columns
+        result_col1, result_col2 = st.columns([1, 2])
+        
+        with result_col1:
             st.metric("High Efficiency Probability", f"{efficiency_score:.1f}%", 
                      delta=f"{efficiency_score - 33.3:+.1f}% vs baseline")
             
+            # Quick insights
+            st.markdown("### 💡 Lineup Assessment")
+            if efficiency_score > 60:
+                st.success("**🎯 ELITE LINEUP**\n\nExceptional efficiency potential with championship-caliber configuration!")
+            elif efficiency_score > 40:
+                st.info("**👍 STRONG LINEUP**\n\nWell-balanced configuration with good efficiency prospects for playoff contention.")
+            else:
+                st.warning("**💡 NEEDS IMPROVEMENT**\n\nConsider adjusting skill balances to optimize lineup efficiency.")
+        
+        with result_col2:
             # Professional Distribution Chart
             fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
             
@@ -568,15 +588,6 @@ elif st.session_state.navigation == "🎮 Lineup Simulator":
             
             plt.tight_layout()
             st.pyplot(fig)
-            
-            # Insight
-            st.markdown("---")
-            if efficiency_score > 60:
-                st.success("**🎯 ELITE LINEUP**: Exceptional efficiency potential with championship-caliber configuration!")
-            elif efficiency_score > 40:
-                st.info("**👍 STRONG LINEUP**: Well-balanced configuration with good efficiency prospects for playoff contention.")
-            else:
-                st.warning("**💡 NEEDS IMPROVEMENT**: Consider adjusting skill balances to optimize lineup efficiency.")
 
 # Data Explorer Section
 elif st.session_state.navigation == "📈 Data Explorer":
@@ -680,11 +691,12 @@ elif st.session_state.navigation == "🔍 Sensitivity Analysis":
     plt.tight_layout()
     st.pyplot(fig)
 
-# Insights & Reports Section
+# Insights & Reports Section - FIXED: Tabs always visible with proper styling
 elif st.session_state.navigation == "📋 Insights & Reports":
     st.markdown('<div class="main-header">📋 Insights & Reports</div>', unsafe_allow_html=True)
     
-    tab1, tab2, tab3 = st.tabs(["🎯 Key Findings", "💡 Recommendations", "🔮 Future Research"])
+    # FIXED: Tabs with proper styling that's always visible
+    tab1, tab2, tab3 = st.tabs(["🎯 **Key Findings**", "💡 **Recommendations**", "🔮 **Future Research**"])
     
     with tab1:
         st.markdown("""
