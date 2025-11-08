@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
-from pgmpy.models import BayesianNetwork
+from pgmpy.models import DiscreteBayesianNetwork
 from pgmpy.estimators import MaximumLikelihoodEstimator, BayesianEstimator
 from pgmpy.inference import VariableElimination
 import warnings
@@ -621,7 +621,7 @@ elif st.session_state.navigation == "🔗 Bayesian Network":
                     ]
                     
                     # Create and fit model
-                    model = BayesianNetwork(edges)
+                    model = DiscreteDiscreteBayesianNetwork(edges)
                     model.fit(data, estimator=BayesianEstimator, 
                              state_names={col: order for col in data.columns},
                              equivalent_sample_size=10)
